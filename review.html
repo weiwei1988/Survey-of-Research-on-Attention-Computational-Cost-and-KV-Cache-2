@@ -1,0 +1,1027 @@
+<title>二次の壁と線形の重荷</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=Noto+Sans+JP:wght@500;700&family=Noto+Serif+JP:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#F4F5F2; --sheet:#FBFBF9; --ink:#12161C; --ink-2:#39424E;
+  --muted:#6A737E; --rule:#D6D9D2; --rule-soft:#E6E8E2;
+  --hot:#B0421E; --hot-soft:#F0E2DA;
+  --acc:#0C666E; --acc-soft:#DCE9E9;
+  --warn:#8A6A16;
+  --font-body:"IBM Plex Serif","Noto Serif JP",Georgia,"Times New Roman",serif;
+  --font-ui:"IBM Plex Sans Condensed","Noto Sans JP",system-ui,-apple-system,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --shadow:0 1px 2px rgba(18,22,28,.05),0 8px 24px -16px rgba(18,22,28,.28);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0C1013; --sheet:#12171B; --ink:#E2E7E9; --ink-2:#B3BCC2;
+    --muted:#8A959D; --rule:#262E34; --rule-soft:#1C2328;
+    --hot:#EE8154; --hot-soft:#2E1D15;
+    --acc:#4CC2C9; --acc-soft:#0F2A2C;
+    --warn:#D6AC4A;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0C1013; --sheet:#12171B; --ink:#E2E7E9; --ink-2:#B3BCC2;
+  --muted:#8A959D; --rule:#262E34; --rule-soft:#1C2328;
+  --hot:#EE8154; --hot-soft:#2E1D15;
+  --acc:#4CC2C9; --acc-soft:#0F2A2C;
+  --warn:#D6AC4A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--font-body); font-size:17px; line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.sheet{max-width:82rem;margin:0 auto;padding:0 clamp(1rem,4vw,3.5rem)}
+
+/* ---------- masthead ---------- */
+.masthead{padding:clamp(3rem,7vw,6rem) 0 2.5rem;border-bottom:1px solid var(--rule)}
+.eyebrow{
+  font-family:var(--font-ui);font-weight:600;font-size:.7rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--hot);display:flex;gap:.9rem;align-items:center;flex-wrap:wrap;
+}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--rule);min-width:2rem}
+h1{
+  font-family:var(--font-ui);font-weight:700;line-height:1.08;
+  font-size:clamp(2.3rem,6.2vw,4.1rem);letter-spacing:-.015em;
+  margin:1.1rem 0 .5rem;text-wrap:balance;max-width:20ch;
+}
+.subtitle{
+  font-size:clamp(1.05rem,2.2vw,1.3rem);color:var(--ink-2);font-style:italic;
+  max-width:44rem;margin:0 0 2rem;line-height:1.6;
+}
+.byline{
+  display:flex;gap:2rem;flex-wrap:wrap;font-family:var(--font-mono);
+  font-size:.74rem;color:var(--muted);letter-spacing:.02em;
+}
+.byline b{display:block;font-weight:500;color:var(--ink-2);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:14rem minmax(0,1fr);gap:clamp(2rem,5vw,4.5rem);padding:3rem 0 6rem;align-items:start}
+@media (max-width:1080px){.layout{grid-template-columns:1fr;gap:2rem}}
+.toc{position:sticky;top:2rem;font-family:var(--font-ui);font-size:.82rem;line-height:1.5}
+@media (max-width:1080px){
+  .toc{position:static;border:1px solid var(--rule);border-radius:2px;padding:1.25rem 1.4rem;background:var(--sheet)}
+}
+.toc h2{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 .9rem}
+.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.55rem}
+.toc a{color:var(--ink-2);text-decoration:none;display:grid;grid-template-columns:1.6rem 1fr;gap:.3rem;border-left:2px solid transparent;padding-left:.6rem;margin-left:-.6rem}
+.toc a:hover{color:var(--hot);border-left-color:var(--hot)}
+.toc .n{font-family:var(--font-mono);font-size:.72rem;color:var(--muted)}
+
+article{max-width:45rem;min-width:0}
+
+/* ---------- headings ---------- */
+h2.sec{
+  font-family:var(--font-ui);font-weight:700;font-size:clamp(1.5rem,3.4vw,2rem);
+  letter-spacing:-.01em;line-height:1.2;margin:4.5rem 0 1.4rem;padding-top:1.6rem;
+  border-top:2px solid var(--ink);text-wrap:balance;
+}
+h2.sec:first-of-type{margin-top:0}
+h2.sec .n{
+  display:block;font-family:var(--font-mono);font-size:.72rem;font-weight:500;
+  letter-spacing:.16em;color:var(--hot);margin-bottom:.7rem;
+}
+h3{font-family:var(--font-ui);font-weight:600;font-size:1.16rem;letter-spacing:.005em;margin:2.6rem 0 .8rem;line-height:1.35;text-wrap:balance}
+h4{font-family:var(--font-ui);font-weight:600;font-size:.98rem;margin:1.9rem 0 .5rem;color:var(--ink-2)}
+p{margin:0 0 1.15rem}
+a{color:var(--acc)}
+strong{font-weight:600}
+em.term{font-style:normal;font-family:var(--font-ui);font-weight:600;font-size:.95em}
+code{font-family:var(--font-mono);font-size:.87em;background:var(--rule-soft);padding:.1em .35em;border-radius:2px;word-break:break-word}
+
+/* ---------- lede ---------- */
+.lede{font-size:1.08rem;color:var(--ink-2);border-left:3px solid var(--hot);padding-left:1.3rem;margin:0 0 2.5rem}
+
+/* ---------- figures ---------- */
+figure{margin:2.6rem 0;max-width:56rem}
+figure svg{display:block;width:100%;height:auto}
+figcaption{
+  font-family:var(--font-ui);font-size:.8rem;color:var(--muted);line-height:1.5;
+  margin-top:.85rem;padding-top:.6rem;border-top:1px solid var(--rule-soft);
+}
+figcaption b{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;color:var(--hot);text-transform:uppercase;margin-right:.5rem}
+
+/* ---------- formula ---------- */
+.formula{
+  font-family:var(--font-mono);font-size:.92rem;line-height:1.9;background:var(--sheet);
+  border:1px solid var(--rule);border-left:3px solid var(--acc);padding:1.1rem 1.3rem;
+  margin:1.8rem 0;overflow-x:auto;
+}
+.formula .lbl{display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;margin:2rem 0;max-width:56rem;border:1px solid var(--rule);background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-family:var(--font-ui);font-size:.85rem;line-height:1.5;min-width:34rem}
+th{
+  text-align:left;font-weight:600;font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);padding:.75rem .9rem;border-bottom:1.5px solid var(--rule);white-space:nowrap;vertical-align:bottom;
+}
+td{padding:.7rem .9rem;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.k{font-weight:600;color:var(--ink);white-space:nowrap}
+td.m{font-family:var(--font-mono);font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ---------- axis chips ---------- */
+.ax{font-family:var(--font-mono);font-size:.72rem;font-weight:500;padding:.12em .45em;border-radius:2px;white-space:nowrap}
+.ax.y{background:var(--acc-soft);color:var(--acc)}
+.ax.n{background:var(--hot-soft);color:var(--hot)}
+.ax.q{background:var(--rule-soft);color:var(--muted)}
+
+/* ---------- callout ---------- */
+.callout{
+  background:var(--sheet);border:1px solid var(--rule);border-top:3px solid var(--acc);
+  padding:1.3rem 1.5rem;margin:2.2rem 0;max-width:52rem;
+}
+.callout.hot{border-top-color:var(--hot)}
+.callout .ct{
+  font-family:var(--font-ui);font-weight:700;font-size:.7rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--acc);margin:0 0 .6rem;
+}
+.callout.hot .ct{color:var(--hot)}
+.callout p:last-child{margin-bottom:0}
+.callout p{font-size:.95rem}
+
+/* ---------- lists ---------- */
+ul.pts,ol.pts{margin:1.2rem 0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:.85rem}
+ul.pts li,ol.pts li{padding-left:2rem;position:relative}
+ul.pts li::before{content:"—";position:absolute;left:0;color:var(--hot);font-family:var(--font-mono)}
+ol.pts{counter-reset:p}
+ol.pts li{counter-increment:p}
+ol.pts li::before{
+  content:counter(p,decimal-leading-zero);position:absolute;left:0;top:.15em;
+  font-family:var(--font-mono);font-size:.72rem;color:var(--hot);font-weight:500;
+}
+.paper{font-family:var(--font-ui);font-weight:600}
+.aid{font-family:var(--font-mono);font-size:.76em;color:var(--muted);white-space:nowrap}
+.flag{font-family:var(--font-mono);font-size:.72em;color:var(--warn);border:1px solid currentColor;padding:0 .25em;border-radius:2px;white-space:nowrap}
+</style>
+
+<div class="sheet">
+<header class="masthead">
+  <div class="eyebrow"><span>Review · Efficient Attention &amp; KV Cache · 2018–2026</span></div>
+  <h1>二次の壁と<br>線形の重荷</h1>
+  <p class="subtitle">Attention の O(n²) 問題と KV キャッシュ問題をめぐる 8 年間 —— 何が解かれ、何が解かれなかったのか、そしてなぜ多くの議論はすれ違ってきたのか。</p>
+  <div class="byline">
+    <div><b>対象期間</b>2018 — 2026</div>
+    <div><b>収録論文</b>195 件</div>
+    <div><b>分類軸</b>FLOPs / 実体化 / 状態サイズ / 厳密性</div>
+    <div><b>作成</b>2026-09-04</div>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc">
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#s1"><span class="n">01</span><span>すれ違いの構造</span></a></li>
+    <li><a href="#s2"><span class="n">02</span><span>問題の定式化</span></a></li>
+    <li><a href="#s3"><span class="n">03</span><span>第一波：近似の時代</span></a></li>
+    <li><a href="#s4"><span class="n">04</span><span>転回：FlashAttention</span></a></li>
+    <li><a href="#s5"><span class="n">05</span><span>戦場の移動：KV キャッシュ</span></a></li>
+    <li><a href="#s6"><span class="n">06</span><span>第二波：定数状態への再挑戦</span></a></li>
+    <li><a href="#s7"><span class="n">07</span><span>収束点：ハイブリッドという妥協</span></a></li>
+    <li><a href="#s8"><span class="n">08</span><span>評価の危機</span></a></li>
+    <li><a href="#s9"><span class="n">09</span><span>未解決問題</span></a></li>
+    <li><a href="#s10"><span class="n">10</span><span>出典と検証状況</span></a></li>
+  </ol>
+</nav>
+
+<article>
+
+<h2 class="sec" id="s1"><span class="n">01 / Framing</span>すれ違いの構造</h2>
+
+<p class="lede">この分野の文献を通読して最初に気づくのは、論争の多くが「同じ問題について異なる意見を述べていた」のではなく、「異なる問題について同じ語彙を使っていた」ということである。</p>
+
+<p>2018 年から 2026 年にかけて、Transformer の Attention 機構が持つ <code>O(n²)</code> の計算量を巡って、おそらく 200 本を超える改良提案が発表された。そのうち、フロンティアの大規模言語モデルで既定の Attention 機構として採用されたものは、<strong>ひとつもない</strong>。</p>
+
+<p>これは失敗の物語ではない。むしろ、問題が正しく定義されるまでに長い時間がかかり、定義され直した瞬間に大量の研究が一斉に無効化され、そして別の場所で戦線が再形成された、という<strong>問題定義の移動</strong>の物語である。本レビューはその移動を追跡する。</p>
+
+<p>すれ違いの核心は単純である。「Attention が重い」という一文が、実際には少なくとも四つの異なる主張を含んでいた。</p>
+
+<ol class="pts">
+  <li><strong>浮動小数点演算数が n² に比例する。</strong> 系列長を倍にすれば演算が 4 倍になる。</li>
+  <li><strong>n×n の行列がメモリ上に実体化される。</strong> 演算数とは独立に、中間結果の格納と読み書きが発生する。</li>
+  <li><strong>自己回帰生成のために過去の状態を保持し続ける必要がある。</strong> KV キャッシュは系列長に比例して増え続ける。</li>
+  <li><strong>厳密な softmax Attention でなければ品質が出ない。</strong> 近似はどこまで許されるのか。</li>
+</ol>
+
+<p>第一波の研究（2018–2022）はほぼ全てが (1) を攻撃した。ところが 2022 年の FlashAttention は (1) を<em class="term">一切改善せずに</em> (2) だけを解き、それだけで実測速度において大半の「線形 Attention」を上回った。この一件で (1) を前提とした研究群の存在理由が消えた。そして問題は (3) へ移動する。KV キャッシュこそが、推論時代の真のボトルネックだった。</p>
+
+<p>したがって本レビューは、各手法を次の 4 軸で分類して読む。この軸を分けずに「O(n²) を解いた」と述べる限り、議論は噛み合わない。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>軸</th><th>問い</th><th>典型的な達成手法</th><th>達成しない代表例</th></tr></thead>
+<tbody>
+<tr><td class="k">A. FLOPs</td><td>漸近計算量を下げたか</td><td>Linformer, Performer, Mamba</td><td>FlashAttention</td></tr>
+<tr><td class="k">B. 実体化</td><td>n×n をメモリに置かずに済むか</td><td>FlashAttention, Ring Attention</td><td>素朴な Linformer 実装</td></tr>
+<tr><td class="k">C. 状態サイズ</td><td>KV／再帰状態を劣線形にしたか</td><td>MLA, Mamba, StreamingLLM</td><td>FlashAttention, GQA（定数倍のみ）</td></tr>
+<tr><td class="k">D. 厳密性</td><td>出力が数学的に厳密か</td><td>FlashAttention, Ring Attention</td><td>ほぼ全ての近似手法</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout hot">
+<p class="ct">本レビューの主張</p>
+<p>効率的 Attention 研究の 8 年間は、<strong>A 軸（FLOPs）に賭けた第一波の敗北</strong>、<strong>B 軸（実体化）を解いた FlashAttention による前提の破壊</strong>、そして <strong>C 軸（状態サイズ）へ移動した第二波</strong>として整理できる。D 軸（厳密性）は、この移動の全期間を通じて「どこまで諦めてよいか」を測る唯一の通貨であり続け、2024 年以降はその通貨の目盛り自体（＝評価ベンチマーク）が信頼を失いつつある。</p>
+</div>
+
+<h2 class="sec" id="s2"><span class="n">02 / Formulation</span>問題の定式化</h2>
+
+<h3>2.1 二つのフェーズ、二つのボトルネック</h3>
+
+<p>Transformer の推論は、性質が根本的に異なる二つのフェーズからなる。この区別を落とすと、あらゆるコスト議論が曖昧になる。</p>
+
+<p><strong>Prefill</strong>（プロンプト処理）では、長さ <code>n</code> の入力を一括で投入する。Attention は <code>n×n</code> のスコア行列を必要とし、計算量は <code>O(n²d)</code>。行列同士の積が中心で演算強度（FLOPs / byte）が高いため、GPU の Tensor Core を飽和させられる。すなわち <em class="term">compute-bound</em> である。</p>
+
+<p><strong>Decode</strong>（自己回帰生成）では、1 トークンずつ処理する。1 ステップあたりの Attention 演算は <code>O(nd)</code> にすぎない。ところが、そのために <strong>KV キャッシュ全体を毎ステップ HBM から読み出す</strong>必要がある。演算は行列とベクトルの積となり、演算強度が潰れる。すなわち <em class="term">memory-bandwidth-bound</em> である。</p>
+
+<figure>
+<svg viewBox="0 0 720 320" role="img" aria-label="Prefill と Decode の二相を対比した模式図">
+  <!-- Panel A: Prefill -->
+  <text x="14" y="22" style="font-family:var(--font-ui);font-size:13px;font-weight:700;fill:var(--ink)">PREFILL</text>
+  <text x="14" y="40" style="font-family:var(--font-mono);font-size:10.5px;fill:var(--muted)">プロンプト一括処理 · compute-bound</text>
+  <g>
+    <rect x="14" y="56" width="180" height="180" style="fill:none;stroke:var(--rule);stroke-width:1"/>
+    <path d="M14 56 L194 236 L14 236 Z" style="fill:var(--hot-soft)"/>
+    <path d="M14 56 L194 236" style="fill:none;stroke:var(--hot);stroke-width:1.4"/>
+    <g style="stroke:var(--rule-soft);stroke-width:.6">
+      <line x1="14" y1="101" x2="194" y2="101"/><line x1="14" y1="146" x2="194" y2="146"/><line x1="14" y1="191" x2="194" y2="191"/>
+      <line x1="59" y1="56" x2="59" y2="236"/><line x1="104" y1="56" x2="104" y2="236"/><line x1="149" y1="56" x2="149" y2="236"/>
+    </g>
+    <text x="104" y="256" text-anchor="middle" style="font-family:var(--font-mono);font-size:10px;fill:var(--muted)">keys →  n</text>
+    <text x="6" y="150" text-anchor="middle" transform="rotate(-90 6 150)" style="font-family:var(--font-mono);font-size:10px;fill:var(--muted)">queries n</text>
+  </g>
+  <text x="14" y="286" style="font-family:var(--font-mono);font-size:11.5px;font-weight:500;fill:var(--hot)">O(n²d) FLOPs</text>
+  <text x="14" y="304" style="font-family:var(--font-ui);font-size:11px;fill:var(--ink-2)">全ペアを計算する。演算強度が高い。</text>
+
+  <!-- divider -->
+  <line x1="300" y1="20" x2="300" y2="304" style="stroke:var(--rule);stroke-width:1;stroke-dasharray:3 4"/>
+
+  <!-- Panel B: Decode -->
+  <text x="330" y="22" style="font-family:var(--font-ui);font-size:13px;font-weight:700;fill:var(--ink)">DECODE</text>
+  <text x="330" y="40" style="font-family:var(--font-mono);font-size:10.5px;fill:var(--muted)">1 トークン生成 · memory-bandwidth-bound</text>
+  <g>
+    <rect x="330" y="56" width="180" height="180" style="fill:none;stroke:var(--rule);stroke-width:1"/>
+    <rect x="330" y="221" width="180" height="15" style="fill:var(--acc-soft)"/>
+    <line x1="330" y1="221" x2="510" y2="221" style="stroke:var(--acc);stroke-width:1.4"/>
+    <g style="stroke:var(--rule-soft);stroke-width:.6">
+      <line x1="375" y1="56" x2="375" y2="236"/><line x1="420" y1="56" x2="420" y2="236"/><line x1="465" y1="56" x2="465" y2="236"/>
+    </g>
+    <text x="420" y="256" text-anchor="middle" style="font-family:var(--font-mono);font-size:10px;fill:var(--muted)">1 行だけ計算する</text>
+  </g>
+  <!-- HBM stream -->
+  <rect x="540" y="56" width="34" height="180" style="fill:var(--acc-soft);stroke:var(--acc);stroke-width:1"/>
+  <text x="557" y="150" text-anchor="middle" transform="rotate(-90 557 150)" style="font-family:var(--font-mono);font-size:10px;fill:var(--acc)">KV キャッシュ</text>
+  <g style="stroke:var(--acc);stroke-width:1.2">
+    <line x1="536" y1="90" x2="516" y2="90" marker-end="url(#ar)"/>
+    <line x1="536" y1="146" x2="516" y2="146" marker-end="url(#ar)"/>
+    <line x1="536" y1="202" x2="516" y2="202" marker-end="url(#ar)"/>
+  </g>
+  <defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L8 4 L0 8 z" style="fill:var(--acc)"/></marker></defs>
+  <text x="592" y="120" style="font-family:var(--font-ui);font-size:11px;fill:var(--ink-2)">毎ステップ</text>
+  <text x="592" y="136" style="font-family:var(--font-ui);font-size:11px;fill:var(--ink-2)">全量を HBM</text>
+  <text x="592" y="152" style="font-family:var(--font-ui);font-size:11px;fill:var(--ink-2)">から読む</text>
+  <text x="330" y="286" style="font-family:var(--font-mono);font-size:11.5px;font-weight:500;fill:var(--acc)">O(nd) FLOPs · O(n) bytes 転送</text>
+  <text x="330" y="304" style="font-family:var(--font-ui);font-size:11px;fill:var(--ink-2)">演算は軽い。帯域だけが効く。</text>
+</svg>
+<figcaption><b>Fig. 1</b>「O(n²) 問題」が痛むのは主に prefill と学習時であり、「KV キャッシュ問題」が痛むのは主に decode 時である。両者は別のハードウェア資源（演算器 対 メモリ帯域）を奪い合っており、片方の解決がもう片方に効くとは限らない。</figcaption>
+</figure>
+
+<h3>2.2 KV キャッシュのサイズ</h3>
+
+<p>KV キャッシュの大きさは初等的な式で与えられる。だが、この式の各項がそれぞれ独立した研究プログラムを生んだ、という事実が本レビューの後半を構成する。</p>
+
+<div class="formula">
+<span class="lbl">KV cache size (bytes)</span>
+S_kv = 2 × L × H_kv × d_head × n × B × b
+<br><br>
+<span class="lbl">各項</span>
+2      … K と V の二つ<br>
+L      … 層数<br>
+H_kv   … <b>保存する</b> KV ヘッド数（クエリヘッド数とは別）<br>
+d_head … ヘッド次元<br>
+n      … 系列長<br>
+B      … バッチサイズ<br>
+b      … 要素あたりバイト数
+</div>
+
+<p>具体的な数値を置くと問題の深刻さが見える。LLaMA-2-70B は 1 トークンあたり約 2.5 MB の KV キャッシュを要する。32K トークンの系列 <strong>1 本</strong>だけで約 80 GB となり、バッチ処理を始める前に H100 一枚の HBM を使い切る。</p>
+
+<p>より示唆的なのは、アーキテクチャ選択だけで生じる差である。FP16 における 1 トークンあたりの KV フットプリントは、LLaMA-3.1-405B（GQA）が約 516 KB、Qwen-2.5-72B（GQA）が約 327 KB、DeepSeek-V3（MLA）が約 70 KB。<strong>4.7 倍から 7.4 倍の開きが、Attention ヘッドの設計という一点だけから生じている</strong>。</p>
+
+<h3>2.3 デコードのローフラインと、KV 削減という稀な軸</h3>
+
+<p>1 トークンの生成に必要な HBM 転送量は、おおよそ「モデル重み + KV キャッシュ」である。したがって 1 ステップの所要時間は帯域幅で下から抑えられる。</p>
+
+<div class="formula">
+t_step  ≳  (W + S_kv) / BW_HBM
+</div>
+
+<p>この単純な式から、二つの重要な帰結が出る。</p>
+
+<ul class="pts">
+<li><strong>KV を減らすことは、そのまま生成レイテンシの短縮になる。</strong> 品質を落とさずに KV を半分にできれば、デコードは（重みが支配的でない領域で）ほぼ二倍速くなる。</li>
+<li><strong>バッチを増やしても KV は償却されない。</strong> モデル重みの読み出しはバッチ内の全リクエストで共有できるが、KV キャッシュはリクエストごとに固有である。ゆえに Attention は、バッチサイズをどれだけ上げても memory-bound のままであり続ける。</li>
+</ul>
+
+<p>この二点目が、KV 削減を特異な位置に置いている。通常、レイテンシとスループットはトレードオフの関係にある。しかし KV キャッシュの削減は、レイテンシを短縮すると同時に、同一メモリでより大きなバッチを積めるようにすることでスループットも上げる。<strong>両方を同時に改善しうる、稀な軸</strong>なのである。</p>
+
+<p>この経験則の裏付けとして、H100 と B200 は Tensor Core のスループットが近いにもかかわらず、B200 のデコードは約 2.4 倍速い。これは両者のメモリ帯域比（3.35 対 8 TB/s）にほぼ一致する。ボトルネックが演算ではなく帯域であることの、直接的な証拠である。</p>
+
+<h2 class="sec" id="s3"><span class="n">03 / First Wave</span>第一波：近似の時代 <span style="font-family:var(--font-mono);font-size:.5em;font-weight:500;color:var(--muted)">2018–2022</span></h2>
+
+<p class="lede">「二次の計算量は高すぎる。ゆえに近似せよ」——この前提のもとに、5 つの系統が並行して展開した。そのいずれも、フロンティアモデルの既定機構にはならなかった。</p>
+
+<h3>3.1 固定パターン疎化</h3>
+
+<p>この系統の起点は Attention 論文の翌年にある。<span class="paper">Generating Wikipedia by Summarizing Long Sequences</span>（Liu ら, 2018.1, <span class="aid">arXiv:1801.10198</span>）が導入した <strong>T-DMCA</strong> は、局所ブロック Attention に加えて<strong>K と V をストライド畳み込みで圧縮してから参照する</strong>。実効的な参照長そのものを縮める発想であり、ここでの「メモリ圧縮」が指すのは推論時キャッシュではなく<em class="term">文脈</em>である点に注意が要る。</p>
+<p>最も直接的な発想は、Attention 行列の大半を単に計算しないことである。<span class="paper">Sparse Transformer</span>（Child ら, 2019, <span class="aid">arXiv:1904.10509</span>）は、ストライド型と固定型の二つの疎パターンを層をまたいで合成することで、数層かければ全結合と同等の受容野が得られるとした。計算量は <code>O(n√n)</code>。</p>
+
+<p>この系統は <span class="paper">Longformer</span>（2020, <span class="aid">arXiv:2004.05150</span>）と <span class="paper">BigBird</span>（2020, <span class="aid">arXiv:2007.14062</span>）で完成をみる。前者は「スライディングウィンドウ + タスク固有のグローバルトークン」、後者はそこに<strong>ランダム結合</strong>を加え、Watts–Strogatz 型のグラフ構造によって疎でありながら万能近似能力とチューリング完全性を持つことを証明した。</p>
+
+<div class="callout hot">
+<p class="ct">理論的正当性と実測速度の乖離</p>
+<p>BigBird は Long Range Arena において<strong>平均品質で最良</strong>だった。にもかかわらず、実測速度は素の Attention とほとんど変わらなかった。ブロック疎とランダム結合の gather パターンが GPU/TPU の行列積ユニットに乗らないためである。「理論上の FLOPs 削減」が「実測の高速化」を意味しないという、この分野を貫く教訓の最初の明確な事例である。</p>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>手法</th><th>年</th><th>中核機構</th><th>計算量</th><th>主な限界</th></tr></thead>
+<tbody>
+<tr><td class="k">Memory-Compressed Attn (T-DMCA)</td><td class="m">2018</td><td>局所ブロック＋K/V をストライド畳み込みで圧縮</td><td class="m">劣二次</td><td>Wikipedia 生成論文の一機構として提示</td></tr>
+<tr><td class="k">Image Transformer</td><td class="m">2018</td><td>局所ブロックへの限定</td><td class="m">O(n·w)</td><td>層を積まねば長距離が届かない</td></tr>
+<tr><td class="k">Sparse Transformer</td><td class="m">2019</td><td>ストライド＋固定パターン</td><td class="m">O(n√n)</td><td>パターンがモダリティ毎に手設計</td></tr>
+<tr><td class="k">BlockBERT</td><td class="m">2019</td><td>ブロック単位のマスク、ヘッド毎に置換</td><td class="m">劣二次</td><td>削減は定数倍寄り（メモリ 19–36%）</td></tr>
+<tr><td class="k">Longformer</td><td class="m">2020</td><td>局所窓＋グローバルトークン</td><td class="m">O(n)</td><td>グローバル指定がタスク依存・手動</td></tr>
+<tr><td class="k">ETC</td><td class="m">2020</td><td>長短 2 ストリームの分解</td><td class="m">O(n)</td><td>グローバル入力の手構成が必要</td></tr>
+<tr><td class="k">BigBird</td><td class="m">2020</td><td>局所＋グローバル＋ランダム</td><td class="m">O(n)</td><td>理論的万能性の一方、実測が速くない</td></tr>
+<tr><td class="k">LongT5</td><td class="m">2021</td><td>プーリングで動的にグローバル生成</td><td class="m">O(n)</td><td>エンコーダ側のみ。生成側は不変</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>3.2 学習型・クラスタリング型疎化</h3>
+
+<p>パターンを手で設計する代わりに、どこを見るかをデータから学ばせる系統である。<span class="paper">Reformer</span>（2020, <span class="aid">arXiv:2001.04451</span>）は局所性鋭敏ハッシュ（LSH）で内積が大きくなりそうなトークン同士を同じバケットに落とし、<code>O(n log n)</code> を達成した。加えて可逆残差層により層数に依存しないメモリを実現している。<span class="paper">Routing Transformer</span>（2020, <span class="aid">arXiv:2003.05997</span>）はオンライン k-means でクラスタリングし <code>O(n^1.5·d)</code>、<span class="paper">Sinkhorn Transformer</span>（2020, <span class="aid">arXiv:2002.11296</span>）は微分可能なソートで系列を並べ替えてから局所窓を当てる。</p>
+
+<p>ここで一点、分類上の注意が必要である。<span class="paper">Adaptively Sparse Transformers</span>（2019, <span class="aid">arXiv:1909.00015</span>）が導入した α-entmax は、softmax を厳密なゼロを出力しうる関数に置き換えるが、<strong>計算量は一切下げない</strong>。n² 個のペアを密に計算した後で重みが疎になるだけである。「スパース Attention」という語が、コスト削減と解釈可能性という二つの無関係な目的に使われてきたことの典型例であり、文献読解の際の混同の主要因のひとつである。</p>
+
+<h3>3.3 低ランク・カーネル・線形 Attention</h3>
+
+<p>本系統は、この分野で最も影響が大きく、かつ最も採用されなかった。</p>
+<p>起点は通説より 2 年早い。<span class="paper">Efficient Attention</span>（Shen ら, 2018.12, <span class="aid">arXiv:1812.01243</span>）は、softmax を Q の行方向と K の列方向へ<strong>別々に</strong>適用したうえで <code>KᵀV</code> を先に計算する順序替えにより、<code>O(n²d)</code> を <code>O(nd²)</code> へ落とした。カーネル特徴写像による近似ではなく<strong>積の順序を替えるだけ</strong>である点で、のちの Performer とは性質が異なる。ただし検証は物体検出・セグメンテーション・ステレオ深度に限られ、因果デコードも KV キャッシュも視野に入っていない。<strong>線形化のアイデア自体は言語モデルの文脈が生まれる前から存在していた</strong>、というのが正確な理解である。</p>
+
+<p><span class="paper">Linformer</span>（2020, <span class="aid">arXiv:2006.04768</span>）は Attention 行列が近似的に低ランクであることを実証し、キーと値を系列方向に固定長 <code>k</code> へ射影した。<code>O(n)</code> を達成する。しかし<strong>時間ステップ方向への射影は未来と過去を混合する</strong>ため、因果的な自己回帰生成と原理的に相性が悪い。これは実装上の不備ではなく、手法の定義そのものに埋め込まれた性質である。</p>
+
+<p>より本質的な貢献は <span class="paper">Linear Transformer</span>（Katharopoulos ら, 2020, <span class="aid">arXiv:2006.16236</span>）にある。<code>softmax(QKᵀ)V</code> をカーネル特徴写像 φ で置き換えると <code>φ(Q)(φ(K)ᵀV)</code> となり、行列積の結合律により累積和として計算できる。<strong>すなわち因果的線形 Attention は固定サイズ状態を持つ RNN と等価である</strong>。この論文の標題「Transformers are RNNs」が示す等価性は、当時の実用的インパクトこそ限定的だったが、2023 年以降の状態空間モデル復興の理論的基盤そのものとなった。本レビューにおける最重要の系譜的結節点である。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>手法</th><th>年</th><th>中核機構</th><th>計算量</th><th>主な限界</th></tr></thead>
+<tbody>
+<tr><td class="k">Efficient Attention</td><td class="m">2018</td><td>softmax を Q/K で別々に適用し KᵀV を先に計算</td><td class="m">O(nd²)</td><td>視覚のみで検証。因果性・KV は視野外</td></tr>
+<tr><td class="k">Synthesizer</td><td class="m">2020</td><td>内積相互作用そのものを廃す</td><td class="m">条件付き</td><td>単独では SOTA に届かず</td></tr>
+<tr><td class="k">Linformer</td><td class="m">2020</td><td>K,V を固定長 k へ線形射影</td><td class="m">O(n)</td><td><strong>因果デコードと非互換</strong>／最大長固定</td></tr>
+<tr><td class="k">Linear Transformer</td><td class="m">2020</td><td>カーネル写像＋結合律で累積和</td><td class="m">O(n) / O(1)/step</td><td>elu+1 は softmax の弱い近似</td></tr>
+<tr><td class="k">Performer (FAVOR+)</td><td class="m">2020</td><td>正定値直交ランダム特徴で不偏近似</td><td class="m">O(n)</td><td>スケール則が素の Transformer より<strong>悪い</strong></td></tr>
+<tr><td class="k">RFA</td><td class="m">2021</td><td>ランダム特徴＋ゲートによる近接バイアス</td><td class="m">O(n)</td><td>近似ギャップ。ただしゲート機構は後年に継承</td></tr>
+<tr><td class="k">Nyströmformer</td><td class="m">2021</td><td>ランドマーク点による Nyström 近似</td><td class="m">O(n)</td><td>ランドマーク選択が発見的／双方向向き</td></tr>
+<tr><td class="k">Luna</td><td class="m">2021</td><td>入れ子の pack/unpack Attention</td><td class="m">O(n)</td><td>潜在系列長という追加のハイパラ</td></tr>
+<tr><td class="k">cosFormer</td><td class="m">2022</td><td>非負性＋コサイン再重み付けで集中度を回復</td><td class="m">O(n)</td><td>位置事前分布が固定。転移性に疑問</td></tr>
+<tr><td class="k">TransNormer</td><td class="m">2022</td><td>勾配発散と Attention 希薄化を正規化＋局所マスクで修正</td><td class="m">O(n)</td><td>中規模まで。だが Lightning Attention の直接の祖先</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>3.4 再帰と外部メモリ</h3>
+
+<p>系列を分割して状態を持ち越す発想である。<span class="paper">Transformer-XL</span>（2019, <span class="aid">arXiv:1901.02860</span>）はセグメント単位の再帰と相対位置符号化を導入し、<span class="paper">Compressive Transformer</span>（2019, <span class="aid">arXiv:1911.05507</span>）は溢れた記憶を破棄する代わりに<strong>圧縮して二次記憶へ移す</strong>。<span class="paper">Memorizing Transformers</span>（2022, <span class="aid">arXiv:2203.08913</span>）は非微分可能な外部 kNN 記憶へ 262K トークンを退避させ、<span class="paper">∞-former</span>（2021, <span class="aid">arXiv:2109.00301</span>）は長期記憶を連続信号（RBF 係数）として表現し、記憶コストをトークン数から完全に切り離した。</p>
+
+<p>この系統は当時ほとんど採用されなかったが、系譜としては最も長く生き延びた。Compressive Transformer の「古い記憶を捨てずに圧縮する」という発想は、そのまま 2023 年以降の KV キャッシュ圧縮（H2O, SnapKV）へ接続する。Memorizing Transformers は RAG と、後述する RetrievalAttention・ShadowKV の CPU 退避＋近傍探索へ接続する。</p>
+
+<h3>3.5 なぜ全滅したのか</h3>
+
+<p>2022 年までに、この波の総括はほぼ確定した。理由は単一ではなく、少なくとも 6 つが積み重なっている。</p>
+
+<ol class="pts">
+<li><strong>支配的手法が存在しなかった。</strong> <span class="paper">Long Range Arena</span>（2021, <span class="aid">arXiv:2011.04006</span>）は 10 手法を統一比較し、明確な勝者がいないことを示した。BigBird は品質が最良だが速くない。Performer は 4K 長で約 5.7 倍速いが ListOps で崩れる。タスクごとに勝者が違う。標準化すべき既定値が存在しない以上、単純で一様に「十分よい」素の Attention が残るのは自然な帰結だった。</li>
+
+<li><strong>スケールで差が縮まらなかった。</strong> <span class="paper">Scaling Laws vs Model Architectures</span>（2022, <span class="aid">arXiv:2207.10551</span>）は、Performer を含むいくつかの効率的アーキテクチャが素の Transformer より<strong>スケール則が悪い</strong>ことを示した。モデルを大きくすれば近似の傷が埋まる、という期待の正反対である。フロンティア規模の事前学習に賭ける理由が消えた。</li>
+
+<li><strong>因果デコードとの非互換。</strong> 最も強力な手法群（Linformer, BigBird, ETC, Longformer, Nyströmformer）は本質的に双方向・エンコーダ指向だった。生成 LLM の支配的パラダイムである厳密な因果デコードへの適用には、非自明な再設計を要するか、効率の前提そのものが崩れた。</li>
+
+<li><strong>定数項が大きく、交差点が遠かった。</strong> <span class="paper">CAB</span>（2022, <span class="aid">arXiv:2210.07661</span>）は「efficiency length」——効率手法が素の Attention の実測速度を上回り始める系列長——を定式化した。多くの手法でそれは数千トークンであり、当時の実タスクの大半はその手前にあった。つまり<strong>ほとんどの場面で「効率的」手法の方が遅かった</strong>。</li>
+
+<li><strong>そもそも長距離文脈が使われていなかった。</strong> <span class="paper">Do Long-Range LMs Actually Use Long-Range Context?</span>（2021, <span class="aid">arXiv:2109.09115</span>）は、長距離モデルの perplexity 改善の多くが局所統計に由来し、遠方の文脈が実質的に活用されていないことを示した。前提そのものが揺らいだ。</li>
+
+<li><strong>低ランク近似には数学的な品質天井があった。</strong> <span class="paper">Scatterbrain</span>（2021, <span class="aid">arXiv:2110.15343</span>）は、疎近似は低エントロピー（スパイキー）な Attention に、低ランク近似は高エントロピーな Attention に適することを定式化し、両者が相補的であることを示した。学習済み言語モデルの Attention は特徴的にスパイキーである。<strong>ゆえにカーネル／低ランク系は、構造的にそれをぼかす</strong>。2023 年の <span class="aid">arXiv:2310.11685</span> はこれを「低エントロピー性と内積の単調性」という二性質として明示した。エンジニアリングの不足ではなく、数式に埋め込まれた限界だった。</li>
+</ol>
+
+<p>この系統の締めくくりに位置するのが <span class="paper">The Devil in Linear Transformer</span>（Qin ら, EMNLP 2022, <span class="aid">arXiv:2210.10340</span>）である。線形化がなぜ失敗するのかを二つの故障モードに分解した——(1) カーネルそのものではなく <strong>softmax の<em class="term">スケーリング</em>操作</strong>に由来する勾配の発散、(2) 系列が長くなるとスコアが薄く広がる <strong>Attention の希薄化</strong>。前者はスケーリングを正規化へ置き換え、後者は浅い層を局所帯域にマスクすることで対処する。結果が <strong>TransNormer</strong> である。第 3.5 節で見る「線形系の構造的天井」を、Scatterbrain の情報理論的な説明とは別の角度——<strong>最適化の安定性</strong>——から診断した点に価値がある。そしてこれが TransNormerLLM を経て、第 7 章の Lightning Attention（MiniMax-01）へ直接つながる。</p>
+<p>ただし、この波が無意味だったわけではない。Katharopoulos らの RNN 等価性と RFA のゲート機構は、第二波の中核部品としてそのまま再利用される（第 6 章）。cosFormer の系譜は上記の TransNormer を経て MiniMax の Lightning Attention へ接続した。<strong>アイデアは死ななかった。前提だけが死んだ。</strong></p>
+
+<h2 class="sec" id="s4"><span class="n">04 / The Turn</span>転回：FlashAttention が壊した前提</h2>
+
+<p class="lede">2022 年、この分野の問いは「どう近似するか」から「そもそも近似は必要か」へ反転した。反転させたのは新しい近似ではなく、厳密なカーネルだった。</p>
+
+<h3>4.1 前史：オンライン softmax と O(n²) メモリの不要性</h3>
+
+<p>転回の材料は先に揃っていた。<span class="paper">Milakov &amp; Gimelshein</span>（2018, <span class="aid">arXiv:1805.02867</span>）は softmax を、走査中に最大値と正規化和を更新し続ける <strong>1 パスの漸化式</strong>で計算できることを示した。新しい最大値が現れたら、それまでの累積和を再スケールすればよい。この漸化式が、以後のあらゆるタイル化 Attention カーネルの数学的中核となる。</p>
+
+<p><span class="paper">Rabe &amp; Staats</span>（2021, <span class="aid">arXiv:2112.05682</span>）の標題は問題を端的に述べている——「Self-attention Does Not Need O(n²) Memory」。分割統治と再計算により、基本 Attention は <code>O(1)</code>、微分込みでも <code>O(log n)</code> のメモリで計算できる。実用的には <code>O(√n)</code> 版が提示され、系列長 16384 においてメモリ超過を推論で 59 倍、微分で 32 倍削減しながら実行時間は数パーセント差に収まった。この実装は FlashAttention 以前に xFormers の <code>memory_efficient_attention</code> としてそのまま提供されている。</p>
+
+<h3>4.2 FlashAttention が実際に変えたもの</h3>
+
+<p>ここが本レビューで最も重要な概念的区別である。<strong>FlashAttention（2022, <span class="aid">arXiv:2205.14135</span>）は Attention の FLOPs を一切減らしていない。</strong> n² 個のスコアを全て計算する。厳密である。近似ではない。</p>
+
+<p>素朴な多カーネル実装が<em class="term">追加で</em>行っていたのは、中間行列 <code>S = QKᵀ</code> と <code>softmax(S)</code> をカーネル起動の合間に HBM へ書き出し、読み戻すことだった。これが <code>O(n²)</code> のメモリと、<code>O(n²)</code> の HBM 往復トラフィックを生んでいた。FlashAttention は QKᵀ → softmax → ·V を単一カーネルへ融合し、Q/K/V を SRAM に収まるタイルで処理し、オンライン softmax 漸化式で行ごとの最大値と和だけを保持し、逆伝播では保存の代わりに再計算する。</p>
+
+<div class="callout">
+<p class="ct">FlashAttention の帰結</p>
+<p>ピークメモリは <code>O(n²)</code> から <code>O(n)</code> へ。HBM トラフィックは <code>O(n²)</code> から <code>Θ(n²d²/M)</code> へ（<code>M</code> は SRAM サイズ）。そして論文はこれが<strong>下界に一致する</strong>ことを証明した。すなわち、与えられた SRAM サイズのもとで、厳密な Attention をこれより少ない HBM アクセスで計算するアルゴリズムは存在しない。FlashAttention は単に速いのではなく、<strong>IO 最適</strong>である。</p>
+</div>
+
+<p>なぜこれで速くなるのか。現代の GPU は演算スループット（数百 TFLOPs）がメモリ帯域（1.5–3 TB/s）を大きく上回る。素朴実装における Attention の演算強度は、GPU が compute-bound を保つのに必要な比を大きく下回っていた。つまり<strong>Attention は実は memory-bound だった</strong>。ゆえに IO を削れば、FLOPs が変わらなくてもその分だけ実時間が縮む。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>版</th><th>年 / 会議</th><th>対象</th><th>中核機構</th><th>代表値</th></tr></thead>
+<tbody>
+<tr><td class="k">FlashAttention</td><td class="m">2022 · NeurIPS</td><td>A100</td><td>タイル化＋オンライン softmax＋再計算</td><td class="m">Attention 単体 7.6×／IO 下界一致を証明</td></tr>
+<tr><td class="k">FlashAttention-2</td><td class="m">2023</td><td>Ampere/Hopper</td><td>系列方向にも並列化、非行列積 FLOPs 削減</td><td class="m">FA1 比 2×／A100 で 225 TFLOPs (72% MFU)</td></tr>
+<tr><td class="k">FlashAttention-3</td><td class="m">2024 · NeurIPS</td><td>H100</td><td>warp 特殊化による非同期化、FP8 ブロック量子化</td><td class="m">FA2 比 1.5–2.0×／FP8 で約 1.2 PFLOPs</td></tr>
+<tr><td class="k">FlashAttention-4</td><td class="m">2026 · MLSys</td><td>B200</td><td>指数関数のソフトウェア模擬、条件付き再スケール</td><td class="m">cuDNN 比 1.3×／1613 TFLOPs (71%)</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>FlashAttention-4（<span class="aid">arXiv:2603.05451</span>）が示す論点は興味深い。Blackwell では Tensor Core スループットが Hopper 比で倍増した一方、共有メモリ帯域と <code>exp()</code> を計算する特殊関数ユニットは倍増しなかった。この<strong>非対称なハードウェア進化</strong>により、今度は指数関数の評価がボトルネックになり、ソフトウェアによる指数関数の模擬が必要になった。IO 最適性の定義そのものが、世代ごとに書き換えられている。</p>
+
+<h3>4.3 デコード側への拡張と、その先</h3>
+
+<p>Prefill を解いた後、同じ思想が decode へ向かう。<span class="paper">Flash-Decoding</span>（2023）は、クエリが 1 トークンしかない decode では batch×heads の並列度だけでは GPU が飽和しないことに着目し、KV キャッシュを系列方向へ分割して部分 Attention を並列計算し、log-sum-exp で統合する。長文脈で最大 8 倍。<span class="paper">FlashDecoding++</span>（2023, <span class="aid">arXiv:2311.01282</span>）は部分 softmax の同期コスト（約 20%）を統一最大値の採用で除去した。</p>
+
+<p>並行して、厳密性を保ったまま系列を複数デバイスへ分散する系統が現れる。<span class="paper">Ring Attention</span>（2023, <span class="aid">arXiv:2310.01889</span>）はデバイスをリング状に並べ、K/V ブロックを巡回させながら、次ブロックの通信を現ブロックの計算に重ねる。近似は一切ない。<span class="paper">Striped Attention</span>（2023, <span class="aid">arXiv:2311.09431</span>）は因果マスク下での負荷不均衡（連続分割だと三角形の空きブロックを持つデバイスが出る）をストライプ分割で解消し、最大 1.65 倍を得た。<span class="paper">DeepSpeed-Ulysses</span>（2023, <span class="aid">arXiv:2309.14509</span>）は all-to-all でヘッド並列へ組み替える別解を採り、<span class="paper">USP</span>（<span class="aid">arXiv:2405.07719</span>）が両者を統一した。</p>
+
+<p>そして 2024 年以降、この系統は<strong>カーネルを書く仕事そのものの抽象化</strong>へ向かう。<span class="paper">FlexAttention</span>（<span class="aid">arXiv:2412.05496</span>）は <code>score_mod</code> / <code>mask_mod</code> というユーザ関数を受け取り、<code>torch.compile</code> がブロック疎 Triton カーネルへ落とす。ALiBi、スライディングウィンドウ、文書マスク、prefix-LM——かつて一つずつ手で CUDA を書く必要があった「Flash + X」の長い裾が、まとめて吸収された。<span class="paper">FlashInfer</span>（<span class="aid">arXiv:2501.01005</span>）は同様の役割をライブラリとして担い、SGLang・vLLM・MLC の共通バックエンドとなっている。</p>
+
+<div class="callout hot">
+<p class="ct">前提が消えるということ</p>
+<p>2019–2021 年の効率的 Transformer 研究は、<strong>実時間コストが漸近計算量に追随する</strong>という暗黙の前提の上に立っていた。FlashAttention はこの前提が、当時実用されていた系列長において誤りであることを示した。厳密な <code>O(n²)</code> FLOPs の Attention が、IO 最適に実装されれば、近似的な <code>O(n)</code> 手法より<strong>実測で速い</strong>。近似側の理論的節約は、依然として memory-bound な複数カーネル起動に食われ、その上で品質の代償まで払っていた。</p>
+<p>以後、新しい Attention 効率化提案は「素朴な Attention」ではなく「厳密かつ既に IO 最適に近いカーネル」を上回らねばならなくなった。これが、既定機構としての近似 Attention 研究プログラムを静かに終わらせた。</p>
+</div>
+
+<h2 class="sec" id="s5"><span class="n">05 / Relocation</span>戦場の移動：KV キャッシュ</h2>
+
+<p class="lede">学習時の FLOPs が解かれたわけではない。だが、産業の重心が学習から推論へ移り、ボトルネックが演算から帯域へ移った結果、コスト式の主役が交代した。</p>
+
+<p>第 2 章の式を再掲する。<code>S_kv = 2 · L · H_kv · d_head · n · B · b</code>。この式が示唆に富むのは、<strong>各項がそれぞれ独立した研究プログラムを生んだ</strong>ことにある。文献の見取り図として、これ以上に効率的な整理はない。</p>
+
+<figure>
+<svg viewBox="0 0 720 250" role="img" aria-label="KV キャッシュサイズの式の各項と、それを攻撃する研究系統の対応図">
+  <g style="font-family:var(--font-mono);font-size:11px">
+    <text x="20" y="16" style="fill:var(--muted);font-size:10px;letter-spacing:.1em">S_kv  =  2 ×</text>
+  </g>
+  <!-- columns -->
+  <g>
+    <!-- 1 L -->
+    <rect x="20" y="26" width="108" height="34" style="fill:var(--hot-soft);stroke:var(--hot);stroke-width:1"/>
+    <text x="74" y="42" text-anchor="middle" style="font-family:var(--font-mono);font-size:13px;font-weight:600;fill:var(--hot)">L</text>
+    <text x="74" y="54" text-anchor="middle" style="font-family:var(--font-ui);font-size:9.5px;fill:var(--ink-2)">層数</text>
+    <line x1="74" y1="60" x2="74" y2="86" style="stroke:var(--rule);stroke-width:1"/>
+    <rect x="20" y="86" width="108" height="126" style="fill:var(--sheet);stroke:var(--rule);stroke-width:1"/>
+    <text x="74" y="102" text-anchor="middle" style="font-family:var(--font-ui);font-size:10.5px;font-weight:700;fill:var(--ink)">層間共有・省略</text>
+    <g style="font-family:var(--font-mono);font-size:9px;fill:var(--muted)">
+      <text x="30" y="120">CLA</text><text x="30" y="134">MLKV</text><text x="30" y="148">YOCO</text>
+      <text x="30" y="162">MiniCache</text><text x="30" y="176">Layer-</text><text x="30" y="188">Condensed</text>
+    </g>
+    <!-- 2 H_kv -->
+    <rect x="136" y="26" width="108" height="34" style="fill:var(--hot-soft);stroke:var(--hot);stroke-width:1"/>
+    <text x="190" y="42" text-anchor="middle" style="font-family:var(--font-mono);font-size:13px;font-weight:600;fill:var(--hot)">H_kv</text>
+    <text x="190" y="54" text-anchor="middle" style="font-family:var(--font-ui);font-size:9.5px;fill:var(--ink-2)">KV ヘッド数</text>
+    <line x1="190" y1="60" x2="190" y2="86" style="stroke:var(--rule);stroke-width:1"/>
+    <rect x="136" y="86" width="108" height="126" style="fill:var(--sheet);stroke:var(--rule);stroke-width:1"/>
+    <text x="190" y="102" text-anchor="middle" style="font-family:var(--font-ui);font-size:10.5px;font-weight:700;fill:var(--ink)">ヘッド共有</text>
+    <g style="font-family:var(--font-mono);font-size:9px;fill:var(--muted)">
+      <text x="146" y="120">MQA 2019</text><text x="146" y="134">GQA 2023</text><text x="146" y="148">GTA 2025</text>
+    </g>
+    <!-- 3 d_head -->
+    <rect x="252" y="26" width="108" height="34" style="fill:var(--hot-soft);stroke:var(--hot);stroke-width:1"/>
+    <text x="306" y="42" text-anchor="middle" style="font-family:var(--font-mono);font-size:13px;font-weight:600;fill:var(--hot)">d_head</text>
+    <text x="306" y="54" text-anchor="middle" style="font-family:var(--font-ui);font-size:9.5px;fill:var(--ink-2)">ヘッド次元</text>
+    <line x1="306" y1="60" x2="306" y2="86" style="stroke:var(--rule);stroke-width:1"/>
+    <rect x="252" y="86" width="108" height="126" style="fill:var(--sheet);stroke:var(--rule);stroke-width:1"/>
+    <text x="306" y="102" text-anchor="middle" style="font-family:var(--font-ui);font-size:10.5px;font-weight:700;fill:var(--ink)">潜在・低ランク</text>
+    <g style="font-family:var(--font-mono);font-size:9px;fill:var(--muted)">
+      <text x="262" y="120">MLA 2024</text><text x="262" y="134">Palu</text><text x="262" y="148">Eigen Attn</text>
+      <text x="262" y="162">LoRC</text><text x="262" y="176">TransMLA</text><text x="262" y="190">TPA</text>
+    </g>
+    <!-- 4 n -->
+    <rect x="368" y="26" width="108" height="34" style="fill:var(--hot);stroke:var(--hot);stroke-width:1"/>
+    <text x="422" y="42" text-anchor="middle" style="font-family:var(--font-mono);font-size:13px;font-weight:600;fill:var(--sheet)">n</text>
+    <text x="422" y="54" text-anchor="middle" style="font-family:var(--font-ui);font-size:9.5px;fill:var(--sheet)">系列長</text>
+    <line x1="422" y1="60" x2="422" y2="86" style="stroke:var(--rule);stroke-width:1"/>
+    <rect x="368" y="86" width="108" height="126" style="fill:var(--sheet);stroke:var(--hot);stroke-width:1.4"/>
+    <text x="422" y="102" text-anchor="middle" style="font-family:var(--font-ui);font-size:10.5px;font-weight:700;fill:var(--hot)">退避・疎化</text>
+    <g style="font-family:var(--font-mono);font-size:9px;fill:var(--muted)">
+      <text x="378" y="120">H2O</text><text x="378" y="134">StreamingLLM</text><text x="378" y="148">SnapKV</text>
+      <text x="378" y="162">Quest</text><text x="378" y="176">DuoAttention</text><text x="378" y="190">NSA / MoBA</text>
+    </g>
+    <!-- 5 B -->
+    <rect x="484" y="26" width="108" height="34" style="fill:var(--hot-soft);stroke:var(--hot);stroke-width:1"/>
+    <text x="538" y="42" text-anchor="middle" style="font-family:var(--font-mono);font-size:13px;font-weight:600;fill:var(--hot)">B</text>
+    <text x="538" y="54" text-anchor="middle" style="font-family:var(--font-ui);font-size:9.5px;fill:var(--ink-2)">バッチ</text>
+    <line x1="538" y1="60" x2="538" y2="86" style="stroke:var(--rule);stroke-width:1"/>
+    <rect x="484" y="86" width="108" height="126" style="fill:var(--sheet);stroke:var(--rule);stroke-width:1"/>
+    <text x="538" y="102" text-anchor="middle" style="font-family:var(--font-ui);font-size:10.5px;font-weight:700;fill:var(--ink)">システム</text>
+    <g style="font-family:var(--font-mono);font-size:9px;fill:var(--muted)">
+      <text x="494" y="120">Orca</text><text x="494" y="134">PagedAttn</text><text x="494" y="148">RadixAttn</text>
+      <text x="494" y="162">Mooncake</text><text x="494" y="176">LMCache</text>
+    </g>
+    <!-- 6 b -->
+    <rect x="600" y="26" width="108" height="34" style="fill:var(--hot-soft);stroke:var(--hot);stroke-width:1"/>
+    <text x="654" y="42" text-anchor="middle" style="font-family:var(--font-mono);font-size:13px;font-weight:600;fill:var(--hot)">b</text>
+    <text x="654" y="54" text-anchor="middle" style="font-family:var(--font-ui);font-size:9.5px;fill:var(--ink-2)">バイト/要素</text>
+    <line x1="654" y1="60" x2="654" y2="86" style="stroke:var(--rule);stroke-width:1"/>
+    <rect x="600" y="86" width="108" height="126" style="fill:var(--sheet);stroke:var(--rule);stroke-width:1"/>
+    <text x="654" y="102" text-anchor="middle" style="font-family:var(--font-ui);font-size:10.5px;font-weight:700;fill:var(--ink)">量子化</text>
+    <g style="font-family:var(--font-mono);font-size:9px;fill:var(--muted)">
+      <text x="610" y="120">FlexGen 4bit</text><text x="610" y="134">KIVI 2bit</text><text x="610" y="148">KVQuant</text>
+      <text x="610" y="162">Coupled Q.</text><text x="610" y="176">QServe</text>
+    </g>
+  </g>
+  <text x="20" y="234" style="font-family:var(--font-ui);font-size:10px;fill:var(--muted)">各系統は乗算的に合成できる。実運用では 3〜4 系統を重ねるのが標準となった。</text>
+</svg>
+<figcaption><b>Fig. 2</b> KV キャッシュサイズの式の各項に、それを攻撃する研究系統が一対一で対応する。<code>n</code> の項（＝退避・疎化）だけが唯一、情報を捨てる操作であり、品質劣化のリスクを負う。他の項は原理的に可逆または近似度が制御可能である。</figcaption>
+</figure>
+
+<h3>5.1 アーキテクチャ側：MQA から MLA へ</h3>
+
+<p><span class="paper">MQA</span>（Shazeer, 2019, <span class="aid">arXiv:1911.02150</span>）は全クエリヘッドで単一の KV ヘッドを共有し、キャッシュをヘッド数分の 1 にした。しかし共有が過激すぎて品質が落ちる。<span class="paper">GQA</span>（2023, <span class="aid">arXiv:2305.13245</span>）はクエリヘッドをグループ化して各グループが 1 つの KV ヘッドを共有する中間解を採り、さらに<strong>既存 MHA チェックポイントの KV ヘッドを平均プーリングして少量の追加学習（元の事前学習計算の 5%）で復元できる</strong>ことを示した。この移行の容易さが決定的で、GQA は LLaMA-2/3、Mistral をはじめ事実上の標準となった。</p>
+
+<p><span class="paper">MLA</span>（DeepSeek-V2, 2024, <span class="aid">arXiv:2405.04434</span>）は発想を変える。ヘッド間で共有するのではなく、K と V を<strong>結合して低ランクの潜在ベクトルへ圧縮</strong>し、キャッシュするのはその潜在表現だけとする。ヘッドごとの K/V は必要時に再構成する。RoPE との整合のために分離型の位置符号化を併用する。結果は第 2 章に示した通り、1 トークンあたり約 70 KB——GQA 勢の 4.7〜7.4 分の 1 である。</p>
+
+<p>MLA には弱点があった。テンソル並列時に潜在キャッシュが各ランクに複製されてしまう。<span class="paper">GTA / GLA</span>（Zadouri, Strauss, Dao, 2025, <span class="aid">arXiv:2505.21487</span>）はこれを正面から解く。GTA は K と V の状態を結合して GQA 品質を保ちつつキャッシュを約半分に、GLA は MLA 品質のまま分割並列に適した形へ再設計した。投機的デコード（クエリ長 &gt; 1）では FlashMLA 比で最大 2 倍速い。</p>
+
+<p>そして <span class="paper">TransMLA</span>（2025, <span class="aid">arXiv:2502.07864</span>）が示したのは、<strong>GQA は MLA の特殊ケースとして厳密に表現できる（逆は成り立たない）</strong>という代数的事実である。ゆえに既存の GQA チェックポイントを MLA へ変換できる。LLaMA-2-7B で KV の 93% を圧縮、8K 文脈で 10.6 倍高速化、必要な追加学習は 60 億トークンのみ。Ant Group の Ling-2.5-1T で実運用されている。</p>
+<p>より過激な方向として、<span class="paper">Keyless Attention</span>（2026.6, <span class="aid">arXiv:2606.21848</span>）は <strong>K 射影そのものを廃す</strong>。キー空間へ写す代わりに、クエリを<strong>値空間へ直接ルーティングする行列</strong>を置き、推論時にはそれをクエリ行列へ融合してしまう。K は計算もされず保存もされないため、KV キャッシュは<strong>構造的に半減する</strong>——共有や量子化のような近似ではなく、片方が存在しなくなる。MHA / MQA / GQA / MLA それぞれの「keyless 版」が導出されている。ただし検証は 1.5B 級までで、7B 超での挙動と既存の FlashAttention 系カーネルとの適合は未確認である <span class="flag">要確認</span>。</p>
+
+<h3>5.2 退避と疎化：唯一、情報を捨てる系統</h3>
+
+<p>Fig. 2 で <code>n</code> の列だけを強調したのには理由がある。他の系統が「同じ情報をより少ないビットで持つ」のに対し、この系統だけが<strong>情報を実際に捨てる</strong>。ゆえに固有の失敗モードを持つ。</p>
+
+<p><span class="paper">H2O</span>（2023, <span class="aid">arXiv:2306.14048</span>）は累積 Attention スコアの大きい「ヘビーヒッター」トークンと直近トークンのみを固定予算内で保持する。20% の保持でスループット最大 29 倍。<span class="paper">Scissorhands</span>（2023, <span class="aid">arXiv:2305.17118</span>）は「一度重要だったトークンは重要であり続ける」という重要度の persistence 仮説を立てた。</p>
+
+<p><span class="paper">StreamingLLM</span>（2023, <span class="aid">arXiv:2309.17453</span>）は別種の発見をもたらした。先頭の数トークンが softmax の質量を不釣り合いに吸収する<strong>アテンションシンク</strong>現象である。これらのシンクと直近窓だけを残せば、追加学習なしに 400 万トークンまで perplexity が安定する。ただしこれは圧縮手法ではなくストリーミング手法であり、中間の内容は完全に捨てられる。</p>
+
+<p>その後の展開は「捨て方をどう賢くするか」の探索史である。<span class="paper">SnapKV</span>（2024, <span class="aid">arXiv:2404.14469</span>）は prefill 末尾の観測窓の Attention パターンが以後に必要なトークンを予測できるとした。<span class="paper">PyramidKV</span> / <span class="paper">PyramidInfer</span>（2024）は重要トークン数が層を上がるにつれ減ることを見出し、層ごとにピラミッド型の予算を配分する（12% の保持で全キャッシュ相当）。<span class="paper">Ada-KV</span>（2024, <span class="aid">arXiv:2407.11550</span>）はヘッド単位の適応的予算配分を既存手法へ後付けできる形で提供した。</p>
+
+<p>転機は<strong>クエリ依存</strong>への移行である。<span class="paper">Quest</span>（2024, <span class="aid">arXiv:2406.10774</span>）は KV をページ化し、各ページのキーの最小値・最大値を保持して、<em class="term">現在のクエリベクトルに対して</em>各ページの重要度を毎ステップ推定する。静的なプロファイルではなく、都度判断する。恒久的な退避を行わない点が本質的な差である。</p>
+
+<p>さらに重要な理論的支柱が <span class="paper">Retrieval Head</span>（2024, <span class="aid">arXiv:2404.15574</span>）である。長文脈からの事実検索を担っているのは、<strong>少数の、モデル固有かつ安定した Attention ヘッド</strong>であることが機構的に示された。針の検索に成功するときこれらのヘッドが確実に発火し、幻覚時には発火しない。<span class="paper">DuoAttention</span>（2024, <span class="aid">arXiv:2410.10819</span>）はこれを直接設計へ翻訳し、ヘッドを「検索ヘッド（全 KV が必要）」と「ストリーミングヘッド（シンク＋直近で足りる）」に分類して二層キャッシュを構成した。</p>
+
+<div class="callout hot">
+<p class="ct">この系統に共通する二つの構造的制約</p>
+<p><strong>第一に、検索性能の崩壊。</strong> 恒久退避手法（H2O, StreamingLLM）は perplexity では健全に見えながら、純粋な needle-in-a-haystack 検索において<strong>一桁パーセント台の正答率</strong>まで落ちることが、複数の後続論文で繰り返し報告されている（全 Attention は約 100%）。</p>
+<p><strong>第二に、FlashAttention との非互換。</strong> 生の Attention 重みをスコアとして読む手法（H2O, SnapKV, TOVA, Keyformer の系譜全体）は、そもそも n×n 行列を実体化しない FlashAttention の上では動作しない。これは精度とは独立した<strong>デプロイ阻害要因</strong>である。ベンチマークを全て通過してもなお、実運用スタックに載らない。近年の研究が、Attention 重みではなく保存済み K/V のみから代理信号を作る方向へ向かっているのはこのためである。</p>
+</div>
+
+<p>2025 年、この問題への回答は<strong>疎性を事後に貼り付けるのをやめ、事前学習に組み込む</strong>という形で現れた。DeepSeek の <span class="paper">NSA</span>（Native Sparse Attention, 2025, <span class="aid">arXiv:2502.11089</span>）は、圧縮・選択・スライディングウィンドウの 3 分岐を並列に持ち、<strong>端から端まで学習可能</strong>なハードウェア整合的階層疎性を構成する。Moonshot AI の <span class="paper">MoBA</span>（2025, <span class="aid">arXiv:2502.13189</span>）は MoE 式のルーティングを Attention に適用し、クエリが学習されたルータを通じて KV ブロックの部分集合を選ぶ。Kimi の長文脈リクエストで実運用されている。この「事前学習に組み込む疎性」という路線は、2025 年末以降に DeepSeek の DSA を起点として広く波及し、ハイブリッドの「厳密側スロット」を占めるに至る（第 7.3 節）。</p>
+
+<h3>5.3 量子化：最も費用対効果の高い一手</h3>
+
+<p>量子化系統の到達点は明快である。<strong>K はチャネル方向（per-channel）、V はトークン方向（per-token）に量子化せよ。</strong> この非対称性が <span class="paper">KIVI</span>（2024, <span class="aid">arXiv:2402.02750</span>）の中核的発見であり、以後ほぼ設計上のコンセンサスとなった。KIVI は追加学習なしの 2bit 量子化でピークメモリ 2.6 倍削減、バッチ 4 倍、スループット 2.35–3.47 倍を得ている。</p>
+
+<p><span class="paper">KVQuant</span>（2024, <span class="aid">arXiv:2401.18079</span>）は、K の量子化を <strong>RoPE 適用前</strong>に行うべきこと、K/V の値分布が非一様であるため非一様量子化が要ること、外れ値を疎成分として分離すべきことを示した。3bit で perplexity 劣化 0.1 未満。80GB A100 一枚で LLaMA-7B の 100 万トークン文脈を可能にする。<span class="paper">Coupled Quantization</span>（2024, <span class="aid">arXiv:2405.03917</span>）はチャネル間の相互依存を利用して<strong>1 チャネルあたり 1 ビット</strong>まで到達した。</p>
+
+<p>実務的には、量子化は<strong>最初に引くべきレバー</strong>である。精度リスクがほぼなく、他のあらゆる系統と乗算的に合成でき、実装も比較的単純だからである。</p>
+
+<h3>5.4 層をまたぐ共有</h3>
+
+<p>ヘッド間で共有できるなら、層間でも共有できるはずである。<span class="paper">CLA</span>（2024, <span class="aid">arXiv:2405.12981</span>）は隣接層をグループ化し、グループ内の全層のクエリが最下層で計算された K/V を参照する。MQA の上にさらに約 2 倍。<span class="paper">MLKV</span>（2024, <span class="aid">arXiv:2406.09297</span>）は極端には全層・全ヘッドで 1 つの KV ヘッドを共有し、MQA 比 6 倍を報告した。</p>
+
+<p><span class="paper">YOCO</span>（2024, <span class="aid">arXiv:2405.05254</span>）はより大胆に構造を変える。自己デコーダがグローバル KV キャッシュを<strong>一度だけ</strong>計算し、その上に積まれた交差デコーダが以後の全層でそれを交差 Attention で再利用する。外から見れば通常のデコーダ専用 Transformer だが、キャッシュは一度しか作られない。<span class="paper">MiniCache</span>（2024, <span class="aid">arXiv:2405.14366</span>）は学習不要で、中〜深層の隣接層の KV 状態が高い類似性を持つことを利用し、大きさと方向に分解して方向のみを補間する（マージすべきでない対には保持機構を残す）。</p>
+
+<h3>5.5 システム側：損失なく取れる分</h3>
+
+<p>ここまでの系統がいずれも何らかの近似を含むのに対し、システム系統は<strong>純粋な無駄の除去</strong>であり、精度リスクをまったく負わない。ゆえに実務上は最初に採用すべきである。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>システム</th><th>年 / 会議</th><th>中核機構</th><th>代表値</th></tr></thead>
+<tbody>
+<tr><td class="k">Orca</td><td class="m">2022 · OSDI</td><td>反復単位スケジューリング＋選択的バッチング（連続バッチングの起源）</td><td class="m">FasterTransformer 比 36.9×</td></tr>
+<tr><td class="k">FlexGen</td><td class="m">2023 · ICML</td><td>GPU/CPU/ディスクへの配置を線形計画で最適化、4bit 圧縮</td><td class="m">単一 16GB GPU で OPT-175B を 1 tok/s</td></tr>
+<tr><td class="k">vLLM / PagedAttention</td><td class="m">2023 · SOSP</td><td>OS の仮想記憶に倣い KV を固定長ページで非連続配置</td><td class="m">2–4× スループット</td></tr>
+<tr><td class="k">Sarathi-Serve</td><td class="m">2024 · OSDI</td><td>chunked prefill による stall-free スケジューリング</td><td class="m">vLLM 比 2.6× 処理容量</td></tr>
+<tr><td class="k">Splitwise / DistServe</td><td class="m">2024 · ISCA/OSDI</td><td>prefill（compute-bound）と decode（memory-bound）を別マシンへ分離</td><td class="m">DistServe: 7.4× リクエスト数</td></tr>
+<tr><td class="k">RadixAttention / SGLang</td><td class="m">2024 · NeurIPS</td><td>トークン接頭辞を鍵とする radix 木で自動的に KV を共有</td><td class="m">構造化ワークロードで 6.4×</td></tr>
+<tr><td class="k">Mooncake</td><td class="m">2024</td><td>KVCache 中心の分離アーキテクチャ。CPU/DRAM/SSD へ跨るキャッシュプール</td><td class="m">最大 525% スループット向上</td></tr>
+<tr><td class="k">LMCache</td><td class="m">2025</td><td>「一度 prefill すればどこでも再利用」。接頭辞に限らない任意位置の再利用</td><td class="m">最大 15× スループット</td></tr>
+<tr><td class="k">AsymCache</td><td class="m">2026</td><td>非連続な複数 KV セグメントを一度に走査するカーネル＋位置依存の再計算コストを織り込む退避</td><td class="m">TTFT 1.9–2.0×</td></tr>
+<tr><td class="k">HiSparse</td><td class="m">2026</td><td>全 KV をホスト DRAM へ置き、GPU 常駐を定数に抑える階層管理</td><td class="m">最大 4.7× スループット</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>2026 年の 2 件は、それぞれ別の見落としを突いている。<span class="paper">AsymCache</span>（Peking Univ., <span class="aid">arXiv:2606.02964</span>）は、既存の無損失キャッシュ系（vLLM・SGLang）が<strong>連続した接頭辞しか扱えない</strong>ことに着目し、FlashAttention と PagedAttention を拡張して<strong>非連続な複数 KV セグメントを一度の走査で処理する</strong>カーネルを作った。退避方策も、「その位置のブロックを再計算するといくらかかるか」を織り込んで最適化する。専用の CUDA/CUTLASS カーネルを要し、評価は GQA モデルに限られる（MLA は未検証）<span class="flag">要確認</span>。</p>
+<p><span class="paper">HiSparse</span>（2026.8, <span class="aid">arXiv:2608.07009</span>）が突くのは、より本質的な点である——<strong>top-k 疎 Attention は 1 ステップの計算を安くするが、容量を減らさない</strong>。選択の候補である以上、全 KV は選べる場所に residency を保たねばならず、結局 HBM を占有し続ける。HiSparse は全履歴をホスト DRAM に置き、GPU 常駐分を固定サイズに抑え、ヒット判定・LRU 置換・ホストからの取得を<strong>デコードの CUDA グラフの内側に融合した</strong>カーネルで処理する。出力はビット単位で厳密（KV の置き場所を変えるだけ）で、DSA・NSA・Quest のいずれの選択器でも再学習なしに動く。ただしホスト DRAM ≫ HBM が前提であり、Grace 系の統合メモリ機では<strong>その前提自体が崩れる</strong>と著者らは明記している。</p>
+<p>この系統には二つの学派が並存している。<strong>同居しつつ丁寧にスケジュールする</strong>（Sarathi-Serve）か、<strong>物理的に分離する</strong>（DistServe / Splitwise / Mooncake）か。両者とも 2025–2026 年時点で実運用されており、決着はついていない。</p>
+
+<p>なお、投機的デコード（<span class="paper">Leviathan ら</span> 2022, <span class="aid">arXiv:2211.17192</span>／DeepMind 2023, <span class="aid">arXiv:2302.01318</span> の同時独立発見に始まり、<span class="paper">Medusa</span>、<span class="paper">EAGLE-1/2/3</span> と続く系譜）は、出力分布を厳密に保ったまま逐次ステップ数を減らす直交した高速化である。EAGLE-3（2025, <span class="aid">arXiv:2503.01840</span>）は最大 6.5 倍を報告する。その検証ステップ自体がツリー Attention という特殊なマスクパターンとして実装されるため、第 4 章の IO 認識カーネル基盤に依存している点は、系譜として押さえておくべきである。</p>
+
+<h3>5.6 入力そのものを縮める</h3>
+
+<p>最後に、そもそも KV キャッシュになる前の段階で文脈を縮める系統がある。<span class="paper">Gist tokens</span>（2023, <span class="aid">arXiv:2304.08467</span>）はプロンプトを少数の「要旨トークン」へ圧縮し（最大 26 倍）、<span class="paper">LLMLingua</span> 系列は小型 LM で低情報トークンを除去する（最大 20 倍）。<span class="paper">ICAE</span>（2023, <span class="aid">arXiv:2307.06945</span>）は LoRA ベースのエンコーダでメモリスロットへ圧縮する。</p>
+
+<p>2025 年の <span class="paper">Cartridges</span>（<span class="aid">arXiv:2506.06266</span>）は概念的に新しい。<strong>KV キャッシュそのものを学習可能なパラメータとして扱い</strong>、文書に対する合成的な自己学習によりオフラインで最適化する。結果は、配布可能な軽量成果物としての KV キャッシュである。同一メモリ予算下で DuoAttention を上回る。キャッシュを「リクエスト毎の一時構造」から「事前に作って配る資産」へ移す発想であり、2025–2026 年に形成途上の系統である。</p>
+
+<h3>5.7 圧縮には理論的な下界がある</h3>
+
+<p>ここまでの 6 系統はいずれも「どこまで圧縮できるか」を経験的に押し広げてきた。では原理的な限界はどこにあるのか。2025 年、この問いに複雑性理論からの回答が出た。</p>
+
+<p><span class="paper">Compression Barriers</span>（Haris &amp; Onak, Boston Univ., 2025.2, <span class="aid">arXiv:2502.15955</span>）は、通信計算量の Index 問題への帰着と Johnson–Lindenstrauss 型の構成により、次を証明した。</p>
+
+<div class="callout hot">
+<p class="ct">無仮定の劣線形 KV キャッシュは存在しない</p>
+<p>Attention に基づくトークン生成アルゴリズムは、<code>n</code> トークンを生成するのに <strong>Θ(nd) の空間を要する</strong>（<code>d</code> は KV の埋め込み次元、<code>d ≥ Ω(log n)</code>）。すなわち<strong>仮定を置かない限り、KV キャッシュを系列長に対して劣線形にすることは原理的に不可能である</strong>。低次元領域 <code>d = o(log n)</code> では <code>Ω(d·e^d)</code> の下界も示される。</p>
+</div>
+
+<p>この結果の読み方には注意が要る。下界は<strong>最悪ケース・無仮定</strong>の設定に対するものであり、実手法を否定するものではない。H2O やStreamingLLM が機能するのは、まさに<strong>データ分布に構造的な仮定を置いている</strong>からである——ヘビーヒッターが存在する、アテンションシンクが効く、といった仮定である。この論文が確定させたのは、<strong>その仮定こそが圧縮を可能にしている唯一の資源だ</strong>ということである。仮定を外せば圧縮の余地はない。</p>
+
+<p>第 6.4 節で見る「壁 1」——固定状態の想起容量には情報理論的な上限がある——と、この結果は同じ事柄を別の側から述べている。あちらは定数状態の再帰モデルについて、こちらは Attention の KV キャッシュについて。<strong>状態を削るという行為には、アーキテクチャを問わず理論的な底がある。</strong></p>
+
+<h2 class="sec" id="s6"><span class="n">06 / Second Wave</span>第二波：定数状態への再挑戦 <span style="font-family:var(--font-mono);font-size:.5em;font-weight:500;color:var(--muted)">2020–2026</span></h2>
+
+<p class="lede">KV キャッシュを圧縮するのではなく、そもそも作らない。第一波が A 軸（FLOPs）に賭けて敗れたのに対し、第二波は C 軸（状態サイズ）を定数にすることに賭けた。今度は理論的な壁に当たった。</p>
+
+<h3>6.1 状態空間モデルの系譜</h3>
+
+<p>この系統の根は <span class="paper">HiPPO</span>（2020, <span class="aid">arXiv:2008.07669</span>）にある。「過去を覚える」ことを<strong>オンライン関数近似</strong>として定式化し、入力信号を直交多項式基底へ射影することで、閉形式の線形常微分方程式 <code>dc/dt = A c(t) + B u(t)</code> を得る。この <code>A</code>（HiPPO-LegS 行列）が、無限に長い履歴を固定サイズの係数ベクトルへ最適に圧縮する。以後の LSSL / S4 / S5 / Mamba は全て、この行列で状態遷移を初期化する。</p>
+
+<p><span class="paper">S4</span>（ICLR 2022, <span class="aid">arXiv:2111.00396</span>）は HiPPO 行列を対角＋低ランク（DPLR）に再パラメータ化し、畳み込みカーネルを <code>O(N log N + L log L)</code> で計算可能にした。学習時は FFT 畳み込みで並列化し、推論時は <code>O(N)</code> の再帰として動く。Long Range Arena で SOTA を取った。だが決定的な弱点があった。<strong>LTI（線形時不変）である</strong>——パラメータが入力内容に依存しないため、内容に基づく「選択」ができない。</p>
+
+<p><span class="paper">S5</span>（ICLR 2023, <span class="aid">arXiv:2208.04933</span>）は S4 の多数の SISO SSM を単一の MIMO SSM へ置き換え、FFT 畳み込みの代わりに<strong>並列連想スキャン</strong>（Blelloch scan, 深さ <code>O(log L)</code>）を用いた。これが Mamba の選択的スキャンの直接の祖先である。</p>
+
+<p><span class="paper">Mamba</span>（2023, <span class="aid">arXiv:2312.00752</span>）の中核的貢献は<strong>選択的 SSM</strong>である。<code>Δ, B, C</code> を現在のトークンの関数とすることで LTI 性を破り、内容に応じて情報を伝播させるか捨てるかを選べるようにした。ただし時変になった結果 FFT 畳み込みが使えなくなるため、代わりにハードウェア認識型の並列連想スキャンを融合 CUDA カーネルとして実装している（カーネル融合と選択的再計算により <code>(B,L,D,N)</code> の状態テンソルを HBM に実体化しない——FlashAttention と同じ発想である）。状態サイズは <code>D_model × N</code>（N≈16）で、<strong>系列長によらず一定</strong>。KV キャッシュが存在しない。</p>
+
+<h3>6.2 双対性：全ては行列ミキサーだった</h3>
+
+<p><span class="paper">Mamba-2</span>（ICML 2024, <span class="aid">arXiv:2405.21060</span>）が導入した<strong>構造化状態空間双対性（SSD）</strong>は、この分野の理論的分水嶺である。状態遷移行列 <code>A</code> をスカラー×単位行列に制限すると、SSM の再帰は因果的線形 Attention の一形態と<strong>代数的に同一</strong>になる。両者は同じ数学的対象——半分離可能行列、あるいは「行列ミキサー」——の異なるパラメータ化にすぎない。</p>
+
+<p>この視点に立つと、乱立していたアーキテクチャが一枚の表に収まる。<strong>差は、状態遷移行列をどう構造化するかだけである。</strong></p>
+
+<div class="tw">
+<table>
+<thead><tr><th>手法</th><th>状態遷移 A<sub>t</sub></th><th>固有値域</th><th>状態</th><th>表現力上の含意</th></tr></thead>
+<tbody>
+<tr><td class="k">Softmax Attention</td><td class="m">—（全ペア保持）</td><td class="m">—</td><td class="m">O(n) 増大</td><td>正確な検索。ただし状態が伸び続ける</td></tr>
+<tr><td class="k">Linear Transformer</td><td class="m">I</td><td class="m">1</td><td class="m">定数</td><td>純加算。上書きできない</td></tr>
+<tr><td class="k">RetNet</td><td class="m">γI（固定）</td><td class="m">[0,1]</td><td class="m">定数</td><td>一様減衰。内容依存なし</td></tr>
+<tr><td class="k">Mamba-2 / SSD</td><td class="m">α<sub>t</sub> I（データ依存）</td><td class="m">[0,1]</td><td class="m">定数</td><td>スカラーゲート。行列積で高速</td></tr>
+<tr><td class="k">Mamba-1 / GLA</td><td class="m">diag(α<sub>t</sub>)</td><td class="m">[0,1]</td><td class="m">定数</td><td>チャネル毎の忘却。<strong>parity 不可</strong></td></tr>
+<tr><td class="k">DeltaNet / RWKV-7</td><td class="m">I − β k kᵀ</td><td class="m">[−1,1]</td><td class="m">定数</td><td>Householder。<strong>正則言語を認識可能</strong></td></tr>
+<tr><td class="k">Gated DeltaNet</td><td class="m">α<sub>t</sub>(I − β k kᵀ)</td><td class="m">[−1,1]</td><td class="m">定数</td><td>大域的忘却＋標的上書きの両立</td></tr>
+<tr><td class="k">KDA（Kimi Linear）</td><td class="m">(I − β k kᵀ)·diag(α<sub>t</sub>)</td><td class="m">[−1,1]</td><td class="m">定数</td><td>減衰を<strong>チャネル毎</strong>に細粒度化。第 7.2 節</td></tr>
+<tr><td class="k">Mamba-3</td><td class="m">複素回転付き（MIMO）</td><td class="m">複素単位円</td><td class="m">定数</td><td>回転による真の状態追跡</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>この表の中で最も重要な列は<strong>固有値域</strong>である。<span class="paper">Unlocking State-Tracking in Linear RNNs Through Negative Eigenvalues</span>（NeurIPS 2024, <span class="aid">arXiv:2411.12537</span>）は、対角型線形 RNN（Mamba, GLA, RWKV, mLSTM）が parity を学習できない理由を、遷移固有値が <code>[0,1]</code>（純粋な減衰、符号反転なし）に制限されていることに帰した。<code>[−1,1]</code> へ拡張すれば——Householder 型 <code>(I − vvᵀ)</code> の積として——<strong>並列学習可能性を失わずに任意の正則言語を学習できる</strong>。RWKV-7（2025, <span class="aid">arXiv:2503.14456</span>）はこの理論を設計へ直接翻訳し、全ての正則言語を認識できることを証明した。</p>
+
+<p>並列学習を可能にする技法にも系譜がある。RetNet が導入した<strong>チャンク再帰</strong>（チャンク内は行列積で並列、チャンク間は再帰で状態を受け渡す）は、GLA・Mamba-2・DeltaNet が共通して再利用する骨格となった。<span class="paper">DeltaNet</span>（NeurIPS 2024, <span class="aid">arXiv:2406.06484</span>）は、逐次的にしか計算できないと思われていたデルタ則（書き込む前に古い値を消去する <code>S_t = S_{t-1}(I − β k kᵀ) + β k vᵀ</code>）を、Householder 行列積の <strong>WY 表現</strong>によってチャンク化 GEMM へ落とすことに成功した。<span class="paper">Gated DeltaNet</span>（NVIDIA, ICLR 2025, <span class="aid">arXiv:2412.06464</span>）は Mamba-2 のスカラーゲート（大域的な高速消去）と DeltaNet のデルタ則（精密な標的上書き）を統合し、これが Qwen3-Next で実際に使われている線形 Attention 層である。</p>
+
+<h3>6.3 状態を「学習する」方向へ</h3>
+
+<p>もう一つの潮流は、状態を固定次元のベクトルや行列ではなく<strong>小さなモデルの重み</strong>として持つ発想である。<span class="paper">TTT layers</span>（2024, <span class="aid">arXiv:2407.04620</span>）は隠れ状態を小モデルの重みとみなし、状態更新を「入力トークンに対する自己教師あり損失の勾配降下 1 ステップ」として定義する。<strong>状態更新が文字通り推論時の学習ステップである</strong>。並列化はチャンク化された「双対形式」——多数のトークンの勾配更新をまとめて閉形式の行列積で計算する——で行い、これは DeltaNet の WY トリックと同じ精神に立つ。TTT-Linear/MLP は Mamba が頭打ちになる 16K 以降も perplexity を下げ続けた。</p>
+
+<p><span class="paper">Titans</span>（Google, NeurIPS 2025, <span class="aid">arXiv:2501.00663</span>）はこれを深く、かつ動力学的にした。神経長期記憶モジュールは深い非線形 MLP であり、<strong>「驚き」指標</strong>（予測誤差が大きいほど大きく更新）にモメンタムと適応的忘却ゲートを加えて online 更新される。短期 Attention との統合パターンを 3 つ提示している——MAC（記憶を文脈として連結）、MAG（記憶出力でゲート）、MAL（記憶を層として直列化）。200 万トークン超へのスケールを主張する。</p>
+
+<h3>6.4 二つの、独立した壁</h3>
+
+<p>第二波は第一波よりはるかに成功した。しかし「Attention を置き換える」という当初の目標は達成していない。理由は、互いに独立な二つの限界が同時に効いているためである。</p>
+
+<div class="callout hot">
+<p class="ct">壁 1：情報理論的ボトルネック（状態サイズと想起容量）</p>
+<p><span class="paper">Zoology</span>（2023, <span class="aid">arXiv:2312.04927</span>）は 17 モデルを事前学習して比較し、Attention 非依存モデルが Pile で最大 2.1 perplexity 劣ること、そして<strong>その差の 82% が連想想起能力で説明できる</strong>ことを示した。診断用合成タスク MQAR（Multi-Query Associative Recall）を導入し、これが実言語性能の差を最もよく予測することを示している。続く <span class="paper">Based</span>（ICML 2024, <span class="aid">arXiv:2402.18668</span>）は<strong>想起と記憶のトレードオフ</strong>を定式化した。固定サイズ状態は無限長の文脈を圧縮せねばならず、ゆえに想起容量は状態サイズによって原理的に上から抑えられる。これはアーキテクチャを問わず成り立つ。</p>
+</div>
+
+<div class="callout hot">
+<p class="ct">壁 2：計算複雑性クラスの天井</p>
+<p><span class="paper">The Illusion of State in State-Space Models</span>（ICML 2024, <span class="aid">arXiv:2404.08819</span>）の結論は挑発的である。再帰的な定式化を持つにもかかわらず、S4 や Mamba は回路計算量の観点で <strong>TC0</strong>——Transformer とまったく同じクラス——に収まる。いずれも NC1 完全な「困難な状態追跡」を表現できない。古典的な非線形 RNN が自明に扱う問題である。<strong>これらのアーキテクチャにおける「状態」は幻想であり、Attention より質的に強い逐次計算能力を与えてはいない。</strong></p>
+</div>
+
+<p>この二つの壁は独立している。壁 2 は Householder 型遷移や負の固有値の導入で脱出できる（RWKV-7, DeltaNet 系）。だが<strong>脱出しても壁 1 は残る</strong>。状態が定数である限り、想起容量は有限である。これが、次章で見るハイブリッド化の理論的正当化そのものである。</p>
+
+<h2 class="sec" id="s7"><span class="n">07 / Convergence</span>収束点：ハイブリッドという妥協 <span style="font-family:var(--font-mono);font-size:.5em;font-weight:500;color:var(--muted)">2024–2026</span></h2>
+
+<p class="lede">第 6 章の二つの壁は、純粋な定数状態モデルが成立しないことを示した。産業側の回答は理論的に美しくはないが明快である——<strong>大半の層を安価な機構にし、少数の層に厳密な Attention を残す</strong>。2024 年以降に出荷されたほぼ全てのモデルが、この一つの妥協の変奏である。</p>
+
+<h3>7.1 ハイブリッドの解剖 — 二つのスロット</h3>
+
+<p>この分野の 2024–2026 年を「誰が何を発明したか」で追うと、無関係な提案の羅列に見える。だが<strong>ハイブリッドを二つのスロットとして解剖する</strong>と、一本の流れとして読める。</p>
+
+<ul class="pts">
+<li><strong>多数派スロット</strong>（層の 75〜92%）— 安価な機構。状態が系列長に依存しないか、参照範囲が定数で抑えられている。</li>
+<li><strong>少数派スロット</strong>（層の 8〜27%）— 厳密な機構。長距離の正確な想起を担う。</li>
+</ul>
+
+<p>2025–2026 年に起きたのは、新しい構造の発明ではない。<strong>両スロットの部品が入れ替わり、少数派スロットの比率が下がり、そして下げた代償を埋める補償機構が現れた</strong>——それだけである。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>時期</th><th>多数派スロットの部品</th><th>少数派スロットの部品</th></tr></thead>
+<tbody>
+<tr><td class="m">2023–2024</td><td>スライディングウィンドウ Attention</td><td>フル MHA / GQA</td></tr>
+<tr><td class="m">2024</td><td>Mamba / Mamba-2、RG-LRU</td><td>フル Attention（少数層）</td></tr>
+<tr><td class="m">2025</td><td>Gated DeltaNet、Lightning Attention</td><td><strong>MLA</strong>（潜在圧縮）</td></tr>
+<tr><td class="m">2026</td><td>KDA（チャネル毎ゲート付きデルタ則）</td><td><strong>学習可能な疎 Attention</strong>（DSA / QSA / MSA）</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>この表の右列が本レビューで最も見落とされやすい変化である。<strong>「厳密側」は固定された基準点ではなかった。</strong> フル Attention から GQA へ、GQA から MLA へ、そして MLA の上に載る学習可能疎性へと、少数派スロットの部品自体が三度入れ替わっている。第 5 章で KV 削減手法として紹介した MLA は、2026 年には<strong>この生態系の共有基盤</strong>になった——DeepSeek 自身、Kimi、Ling/Ring のいずれでも、MLA は「安価な多数層」の相方として現れる。</p>
+
+<h3>7.2 多数派スロットの部品</h3>
+
+<p>最も広く採用され、かつ最もリスクが低いのは、<strong>Attention パラダイムを一切離れない解</strong>——局所（スライディングウィンドウ）と大域 Attention の交互配置である。</p>
+
+<ul class="pts">
+<li><span class="paper">Mistral 7B</span>（2023, <span class="aid">arXiv:2310.06825</span>）：窓幅 4096 の SWA。層を積むことで実効受容野が <code>W × 層数</code> に届くという論法。</li>
+<li><span class="paper">Gemma 2</span>（<span class="aid">arXiv:2408.00118</span>）：局所（窓 4096）と大域（8192）を 1:1 で交互配置。</li>
+<li><span class="paper">Gemma 3</span>（2025, <span class="aid">arXiv:2503.19786</span>）：<strong>5:1</strong> へ変更。128K 以上の文脈目標に対して KV 膨張を抑えることが明示的な理由。</li>
+<li><span class="paper">Llama 4 iRoPE</span>（Meta, 2025 <span class="flag">要確認</span>）：RoPE 付き局所 3 層＋位置符号化なし（NoPE）の大域 1 層。</li>
+<li><span class="paper">Character.AI</span>：窓幅を約 1024 まで縮めた局所／大域交互配置に加え、<strong>層間 KV キャッシュ共有</strong>を併用。GQA 比で約 8 倍の削減を報告。</li>
+</ul>
+
+<p>より攻める陣営は、多数派スロットに<strong>定数状態の再帰</strong>を置いた。Jamba（AI21, <span class="aid">arXiv:2403.19887</span>）と Samba（Microsoft, <span class="aid">arXiv:2406.07522</span>）は Mamba を、Griffin / RecurrentGemma（DeepMind, <span class="aid">arXiv:2402.19427</span>）は RG-LRU を採る。Samba は交互配置ではなく<strong>全層で</strong> Mamba→MLP→SWA→MLP を融合する点が独特で、128K プロンプトで 3.73 倍のスループット、1M へのゼロショット外挿を報告する。Nemotron-H（NVIDIA, <span class="aid">arXiv:2504.03624</span>）と Granite 4.0（IBM）は Mamba-2 を、Falcon-H1（TII, <span class="aid">arXiv:2507.22448</span>）は同一ブロック内で Attention ヘッドと SSM ヘッドを<strong>並列</strong>実行する構成を採った。</p>
+
+<h4>KDA — デルタ則をチャネル毎に細粒度化する</h4>
+
+<p>2026 年時点で多数派スロットの最先端にあるのが、<span class="paper">Kimi Linear</span>（Moonshot AI, 2025.10, <span class="aid">arXiv:2510.26692</span>）の <strong>KDA（Kimi Delta Attention）</strong>である。第 6 章の Gated DeltaNet の直系の改良で、差は一点に集約される。</p>
+
+<div class="formula">
+<span class="lbl">Gated DeltaNet</span>
+S_t = α_t · (I − β_t k_t k_tᵀ) S_{t−1} + β_t k_t v_tᵀ      … α_t は<b>スカラー</b>
+<br><br>
+<span class="lbl">KDA</span>
+S_t = (I − β_t k_t k_tᵀ) · Diag(α_t) · S_{t−1} + β_t k_t v_tᵀ   … α_t は<b>チャネル毎ベクトル</b>
+</div>
+
+<p>大域的な忘却ゲートを単一スカラーからチャネル毎の対角行列へ細粒度化した。実装は<strong>対角＋低ランク（DPLR）</strong>遷移行列に対する専用のチャンク化アルゴリズムで、一般の DPLR 形式より計算を削りつつ古典的デルタ則との整合を保つ。3:1 の KDA:MLA ハイブリッドで、フル MLA 比の KV キャッシュ最大 75% 削減、100 万トークン文脈でデコード最大 6 倍を報告する。</p>
+
+<div class="callout">
+<p class="ct">帰属についての注記</p>
+<p>KDA を第 6.2 節の負固有値理論（<span class="aid">arXiv:2411.12537</span>）の系譜に位置づけたくなるが、<strong>Kimi Linear 論文自身は固有値や状態追跡の複雑性理論に言及していない</strong>。論文が論じる安定性は、細粒度減衰が導入する除算の数値精度についてのものである。両者の接続は外部からの解釈であって、原論文の主張ではない。</p>
+</div>
+
+<p>並行して、Ant Group / InclusionAI の <span class="paper">Ling / Ring</span> 系列は <strong>Lightning Attention ＋ MLA</strong> という別系統を走らせた（"Every Attention Matters", <span class="aid">arXiv:2510.19338</span>／Ring・Ling 2.6, <span class="aid">arXiv:2606.15079</span>）。異なる線形機構から出発して、ほぼ同じ比率帯へ独立に到達している。</p>
+
+<h3>7.3 少数派スロットの部品も入れ替わった</h3>
+
+<p>第 5.2 節で見た NSA は方法論としての貢献だった。実際に出荷されたのは <strong>DSA（DeepSeek Sparse Attention）</strong>である（V3.2-Exp, 2025.9／完全版 2025.12, <span class="aid">arXiv:2512.02556</span>）。</p>
+
+<p>機構は NSA と似て非なるものである。<strong>Lightning Indexer</strong> と呼ばれる軽量な索引器（FP8、トークンあたり約 128 次元のキーキャッシュ。MLA 本体の 512 次元に対して小さい）が先行する全トークンを安価に採点し、その上で <strong>top-2048 のトークンを個別に選択</strong>する。NSA がブロック粒度だったのに対し DSA は<strong>トークン粒度</strong>であり、また MLA を置き換えるのではなく <strong>MLA の上に載る</strong>（"Sparse MLA"）。学習は凍結した密 Attention の出力に対して索引器をウォームアップし、その後に疎学習へ切り替える二段構成。計算量は <code>O(L²)</code> から <code>O(Lk)</code> へ落ち、API 価格 50% 超の引き下げ、長文脈推論 2–3 倍、メモリ 30–40% 削減が公称値である。</p>
+
+<div class="callout">
+<p class="ct">設計が実装ごと借用された事例</p>
+<p><span class="paper">GLM-5</span>（Zhipu / Z.ai, 2026.2, <span class="aid">arXiv:2602.15763</span>）は独自の疎機構を発明せず、<strong>DSA をそのまま採用した</strong>と論文中で明言している。GLM-4.5（2025.8, <span class="aid">arXiv:2508.06471</span>）が素の GQA だったことを踏まえると、これは明確な設計上の断絶である。</p>
+</div>
+
+<p>さらに <span class="paper">LongCat Sparse Attention（LSA）</span>（Meituan, 2026.8, <span class="aid">arXiv:2608.01662</span>）は、DSA の弱点を名指しで修正する後継として位置づけられる——索引器自体の <code>O(L²)</code> 採点コストと、散在した HBM アクセスのハードウェア非効率である。対策は 3 つ。<strong>Streaming-Aware Indexing</strong>（散在 KV を連続・整列レイアウトへ変換）、<strong>Cross-Layer Indexing</strong>（層間蒸留で索引結果を隣接層で再利用）、<strong>Hierarchical Indexing</strong>（粗から細への段階的絞り込み）。</p>
+
+<p>ここに <strong>NSA（2025.2）→ DSA（2025.9）→ LSA（2026.8）</strong> という、各段が前段のボトルネックを明示的に潰す 3 段の連鎖が成立している。第 3 章で見た第一波が「互いに無関係な提案の並列」だったのと対照的に、この系統は<strong>累積している</strong>。DeepSeek 自身は <span class="paper">V4</span>（2026, <span class="aid">arXiv:2606.19348</span>）で <strong>CSA ＋ HCA</strong> のハイブリッドへ進んだ。機構の定義は本調査では名称以上に確認できていない <span class="flag">要確認</span>が、100 万トークン文脈で V4-Pro はトークンあたり推論 FLOPs が V3.2 の <strong>27%</strong>、KV キャッシュが <strong>10%</strong> と報告される。</p>
+
+<h3>7.4 比率はどこまで下げられるか</h3>
+
+<p>ここまでを一つの尺度に並べると、少数派スロットの比率が下がり続けてきたことが見える。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>モデル</th><th>組織 · 年</th><th>比率（安価 : 厳密）</th><th>厳密側の割合</th></tr></thead>
+<tbody>
+<tr><td class="k">Gemma 2</td><td class="m">Google · 2024</td><td class="m">1 : 1（局所 : 大域）</td><td class="m">50%</td></tr>
+<tr><td class="k">Kimi K3</td><td class="m">Moonshot · 2026.7</td><td class="m">69 KDA : 24+1 MLA</td><td class="m">約 27%</td></tr>
+<tr><td class="k">Qwen3-Next / 3.5 / <b>3.8-Max</b></td><td class="m">Alibaba · 2025.9–2026.8</td><td class="m">3 : 1（1 年間不変）</td><td class="m">25%</td></tr>
+<tr><td class="k">Gemma 3</td><td class="m">Google · 2025.3</td><td class="m">5 : 1</td><td class="m">約 17%</td></tr>
+<tr><td class="k">MiniMax-01</td><td class="m">MiniMax · 2025.1</td><td class="m">7 : 1（Lightning : softmax）</td><td class="m">12.5%</td></tr>
+<tr><td class="k">Ling 2.5 / Ring 2.6</td><td class="m">Ant · 2026</td><td class="m">7 : 1（Lightning : MLA）</td><td class="m">12.5%</td></tr>
+<tr><td class="k">Granite 4.0</td><td class="m">IBM · 2025.10</td><td class="m">9 : 1 <span class="flag">要確認</span></td><td class="m">約 10%</td></tr>
+<tr><td class="k">Nemotron-H</td><td class="m">NVIDIA · 2025.4</td><td class="m">4/52 層、10/118 層</td><td class="m">約 8%</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout hot">
+<p class="ct">訂正：Qwen 3.8 Max は実在する。ただし「フル Attention が 1 層」ではない</p>
+<p>本レビューの初版は「Qwen 3.8 という旗艦世代は存在しない」と記した。<strong>これは誤りである。</strong> <span class="paper">Qwen3.8-Max</span> は 2026 年 8 月に公開された（プレビュー 7 月中旬、API 提供開始 8 月 3 日、オープンウェイト 8 月 12–13 日、2.4T 総／95B アクティブ、92 層、ネイティブ 262,144 トークン文脈）。Alibaba が Max 級のチェックポイントをオープン公開した初の事例でもある。</p>
+<p>一方で「フル Attention 層が 1 層しかない」という特徴づけは、一次情報と一致しない。公開された <code>config.json</code> は <code>full_attention_interval: 4</code> を示しており、92 層中<strong>23 層が Gated Attention</strong>——すなわち <strong>3:1、25%</strong> である。これは Qwen3-Next（2025.9）以来 1 年間<strong>まったく変わっていない</strong>。同時公開の密モデル Qwen3.8-27B も同じ <code>full_attention_interval: 4</code>（64 層中 16 層）で、二つの独立した設定ファイルが同じ結論を与える。</p>
+<p>「1 層」という理解の出所はおそらく、姉妹モデル <span class="paper">Qwen3.8-Flash-Next</span> の技術報告（<span class="aid">arXiv:2608.30320</span>）が繰り返す <strong>"one full-attention layer in every four"</strong> という表現である。これは<strong>比率</strong>を述べたものであって、絶対数ではない。なお Qwen3.8-Max 自体には専用の技術報告が存在せず <span class="flag">要確認</span>、アーキテクチャの一次情報は設定ファイルと GitHub の README に限られる。</p>
+</div>
+
+<p>比率表を見ると、Qwen3.8-Max の 25% はむしろ<strong>中位</strong>である。最も低いのは Nemotron-H と Granite 4.0 の 8〜10% 帯。そして<strong>フル Attention が 0% の旗艦は存在しない</strong>（MiniMax は試みて撤退した。7.6 節）。</p>
+
+<h4>下限はどこにあるか</h4>
+
+<p>「1 層まで減らせるか」という問いには、実は直接の実験的回答がある。</p>
+
+<ul class="pts">
+<li><span class="paper">Nemotron-Flash</span>（NVIDIA, 2025.11, <span class="aid">arXiv:2511.18890</span>）は 18 層・3B のモデルで、フル Attention 3 層／2 層＋SWA 1 層／<strong>1 層＋SWA 2 層</strong>を比較した。結果は明確で、<strong>フル Attention を 1 層まで減らすと長文脈の NIAH 性能が有意に劣化する</strong>。著者らは小規模 LM であっても<strong>最低 2 層は残すこと</strong>を明示的に推奨している。</li>
+
+<li><span class="paper">Rethinking the Role of Efficient Attention in Hybrid Architectures</span>（Tsinghua / OpenBMB, 2026.6, <span class="aid">arXiv:2606.15378</span>）は機構的な説明を与える。長距離想起の能力は<strong>ほぼ全面的にフル Attention 層が担っており</strong>、効率的／線形層は主として「最適化の事前分布」として機能する——すなわちフル Attention 層の内部に検索ヘッドが形成される過程を速める（窓が大きすぎると逆に遅らせる。彼らの言う "Large-Window Laziness"）。<strong>安価な層は学習動態を助けるが、想起能力の代替にはならない。</strong></li>
+
+<li><span class="paper">NLL-Guided Full-Attention Layer Selection</span>（2026.6, <span class="aid">arXiv:2606.27791</span>）は<strong>配置</strong>が効くことを示した。どの層をフルのまま残すかを層ごとの NLL 劣化で選ぶと、全層の 1/4 だけをフルにしても、素朴に 1/2 をフルにした場合とほぼ同等（LongMemEval で 64.6% 対 65.0%）。つまり固定周期（Qwen の 1-in-4 のような）は層配置として最適ではない可能性がある。</li>
+
+<li><span class="paper">Neural Attention Search Linear</span>（<span class="aid">arXiv:2602.03681</span>）は層単位ではなく<strong>トークン単位</strong>の適応的ハイブリッドで、固定 3:1 の Gated DeltaNet ハイブリッドを検索タスクで大きく上回った（平均 45.07 対 37.30）。</li>
+</ul>
+
+<div class="callout hot">
+<p class="ct">比率について現時点で言えること</p>
+<p>普遍的な最小層数を与えた研究は存在しない。だが方向は一致している——<strong>厳密 Attention の割合には下限があり、それは 1 層より上にある</strong>。安価な層は想起を肩代わりしない。そして<strong>層数より配置が効く</strong>可能性があり、適切に選べば必要な割合は半減しうる。第 6.4 節の「壁 1」（固定状態の想起容量には情報理論的上限がある）が、層の水準で再び顔を出していると読める。</p>
+</div>
+
+<h3>7.5 深さ方向の情報流をどう補償するか</h3>
+
+<p>厳密 Attention の割合を下げると、系列方向の長距離結合だけでなく、<strong>層をまたぐ情報の運搬</strong>も痩せる。2026 年、二つのラボがこの問題に対して独立に、構造の異なる回答を出した。</p>
+
+<h4>Attention Residuals（Kimi K3）</h4>
+
+<p>Kimi K3（<span class="aid">arXiv:2607.24653</span>）の <strong>Attention Residuals</strong> は、位置ではなく<strong>深さを添字とする第二の Attention</strong> である。層 <code>l</code> ごとに学習されたパセウドクエリ <code>w_l</code> が、埋め込み層と先行する全層 <code>1..l−1</code> の<strong>出力</strong>に対して softmax で注意を張る。</p>
+
+<div class="formula">
+α<sub>i→l</sub> = softmax<sub>i</sub>( w<sub>l</sub> · RMSNorm(h<sub>i</sub>) )
+<br>
+h<sub>l</sub> = Σ<sub>i</sub> α<sub>i→l</sub> · v<sub>i</sub>
+</div>
+
+<p>実装は「Block Attention Residuals」として、約 12 層ずつ 8〜9 ブロックにまとめ、ブロック内の出力を事前に集約してからブロック単位で深さ方向 Attention を張る。メモリは <code>O(Ld)</code> から <code>O(Nd)</code> へ落ちる。K3 の構成は 93 層、(3 KDA + 1 Gated-MLA) の繰り返しに末尾の MLA 1 層を加えたものである。</p>
+
+<div class="callout">
+<p class="ct">層間 KV 共有とは別物である</p>
+<p>第 5.4 節の CLA・MLKV・YOCO・Layer-Condensed はいずれも <strong>KV キャッシュの共有</strong>——Attention の<em class="term">入力</em>を層間で使い回して<strong>メモリを減らす</strong>技法である。Attention Residuals は Attention の<em class="term">出力</em>を深さ方向に再利用して<strong>表現力を確保する</strong>ものであり、目的が逆を向いている。実際 K3 の 75% の KV 削減は KDA に帰属しており、AttnRes ではない。AttnRes は逆に<strong>計算を増やす</strong>（ブロック化で緩和）。系譜としては DenseNet 的な深さ方向スキップに近い。</p>
+</div>
+
+<h4>Gated Residual（Qwen3.8-Flash-Next）</h4>
+
+<p><span class="paper">Qwen3.8-Flash-Next</span> の技術報告（<span class="aid">arXiv:2608.30320</span>, 2026.8）は別解を提示する。<strong>残差ストリームそのものを 4 本の枝へ広げる</strong>。各枝は独立に RMSNorm され、次のブロックへは「ゲート付き読み出し」——ランク <code>d/8</code> のボトルネックを通したシグモイドゲートによる加重平均——が渡る。各ブロックの出力は「ゲート付き書き込み」により枝ごとのスカラー（<code>[0,2]</code> にスケール）で分配される。</p>
+
+<p>興味深いのは、学習後に<strong>枝が自発的に役割分化する</strong>ことである。1 本が長距離経路を担い（平均スキップ距離 約 10.9 層）、残り 3 本は局所に留まる（約 3.4–3.9 層）。論文はこれを、先行する Hyper-Connections の「枝間混合演算子」——推論コストの支配項だった——の置き換えとして位置づけている。</p>
+
+<p>同モデルはもう一つ、少数派スロット側の変更を行っている。事前学習では 4 層に 1 層のフル Attention を置き、<strong>継続事前学習の段階でそれを QSA（Qwen Sparse Attention）へ差し替える</strong>。QSA はマイクロブロック粒度の軽量索引器で top-k 約 2048 トークンを選び、圧縮率 4、索引器には部分 RoPE（128 次元中 64）、そして<strong>キー圧縮を位置符号化の前に行う</strong>（回転位相の異なるトークンを平均しないため）。報告値は、RULER ≥512K で 90.08 → 93.00、MRCR 1M で 20.71 → 26.44 と<strong>密 Attention を上回り</strong>、1M 文脈で prefill 7.6 倍・decode 4.9 倍。</p>
+
+<p>Kimi の「深さ方向の Attention」と Qwen の「ゲート付き多枝残差」は機構としては全く異なるが、<strong>同じ問題に対する同時期の独立解</strong>である——厳密 Attention を減らした深いモデルで、どう安価かつ適応的に情報を深さ方向へ運ぶか。</p>
+
+<h3>7.6 揺り戻し — 自社の新機構すら生き延びない</h3>
+
+<div class="callout hot">
+<p class="ct">MiniMax の完全な弧：M1 → M2 → M3</p>
+<p>MiniMax-01 / M1 は Lightning Attention の 1:7 ハイブリッドを出荷した。ところが <strong>M2</strong>（2025 年 10–11 月）は<strong>全層フル Multi-Head Attention へ回帰した</strong>。同社の報告によれば、数千億から数兆トークン規模の継続事前学習実験を SWA を含む複数の線形 Attention 変種にわたって行ったが、推論・コーディング・エージェントタスクでフル Attention の品質に安定して並ぶものはなかった。差は SFT 後の長文脈で拡大し、32K を超える文脈での検索・多段推論・文脈内学習で有意に劣った。さらに多くの線形 Attention は<strong>学習時ですら memory-bandwidth-bound</strong> であり、加えて<strong>数値精度に敏感</strong>で実運用の低精度キャッシュと衝突する。</p>
+<p>だがこれも終点ではなかった。<strong>M3</strong>（2026.6）の <strong>MSA</strong>（<span class="aid">arXiv:2606.13392</span>）で疎化へ戻る——ただし<strong>線形化にではない</strong>。索引分岐が top-k ブロックを選び、主分岐は選ばれたブロックに対して<strong>厳密な</strong>ブロック疎 GQA を計算する。softmax の表現力は保たれる。なお <strong>MSA は KV キャッシュ自体を小さくしない</strong>。疎化されるのはアクセスパターンだけで、節約されるのは計算と帯域である（1M で計算 28.4 倍、prefill 14.2 倍、decode 7.6 倍）。これは MSA に限った性質ではない。<strong>top-k 型の疎 Attention はすべて同じ構造を持つ</strong>——選択の候補である以上、全 KV は選べる場所に残らねばならない。第 5.5 節の HiSparse は、まさにこの残された容量問題を階層配置で引き受ける設計である。</p>
+</div>
+
+<p>同種の揺り戻しがもう一例ある。StepFun の <span class="paper">Step-3</span>（2025.7, <span class="aid">arXiv:2507.19427</span>）は <strong>MFA</strong>（QK 回路の低ランク分解、原論文 <span class="aid">arXiv:2412.19255</span>）と、Attention と FFN を別ハードウェアへ分離する <strong>AFD</strong> を導入した。しかし後継の <span class="paper">Step 3.5 Flash</span>（2026.2, <span class="aid">arXiv:2602.10604</span>）は <strong>MFA を継承せず</strong>、3:1 の SWA／フル交互配置へ回帰している。</p>
+
+<p>この二例が示すのは、第 3 章で見た第一波の教訓が形を変えて生きているということである。「理論上の FLOPs 削減が実測の高速化を意味しない」——BigBird が 2020 年に直面した問題に、線形 Attention は 2025 年にも直面した。<strong>実測と品質の両方で既存手法を上回らねば残らないという規律は、機構が自社製であっても容赦なく適用されている。</strong></p>
+
+<h3>7.7 変換という第三の道</h3>
+
+<p>ゼロから学習するのでも事後に圧縮するのでもなく、<strong>既存の Transformer を線形／SSM モデルへ蒸留する</strong>系統が 2024–2025 年に成立した。</p>
+
+<p><span class="paper">MOHAWK</span>（NeurIPS 2024, <span class="aid">arXiv:2408.10189</span>）は 3 段階の漸進的蒸留を提案する。第 1 段階で各層の「行列ミキサー」——SSD の枠組みにおいて Transformer 層と SSM 層が共に具現する暗黙の Attention 等価行列——を直接一致させ、第 2 段階でブロック単位の隠れ状態を、第 3 段階で通常の end-to-end ロジット蒸留を行う。<span class="paper">Llamba</span>（2025, <span class="aid">arXiv:2502.14458</span>）はこれを適用し、<strong>事前学習トークン予算の 0.1% 未満</strong>（8B で約 120 億トークン）で Llama-3.x を Mamba へ蒸留した。</p>
+
+<p><span class="paper">The Mamba in the Llama</span>（<span class="aid">arXiv:2408.15237</span>）はさらに直接的で、Attention 層の Q/K/V 射影の<strong>重みをそのまま流用</strong>する。<span class="paper">LoLCATs</span>（<span class="aid">arXiv:2410.10254</span>）は、線形 Attention に元の softmax の<em class="term">出力</em>を MSE で層ごとに一致させた後、LoRA で残差誤差を補正する。</p>
+
+<p>これらは、第一波の遺産（線形 Attention の数学）と第二波の理論（SSD 双対性）が揃って初めて可能になった。<strong>変換が成立するのは、両者が同じ行列ミキサーだからである。</strong></p>
+
+<h3>7.8 主流から外れた二つの設計</h3>
+
+<ul class="pts">
+<li><span class="paper">KSA（Kwai Summary Attention）</span>（Kuaishou, 2026.4, <span class="aid">arXiv:2604.24432</span>）は、選択型疎性の一族とは軸が異なる。生のトークンやブロックを<em class="term">選ぶ</em>のではなく、履歴を<strong>学習可能な要約トークンへ圧縮する</strong>。チャンク境界に整列したスライディング<em>チャンク</em>Attention を使うため、過去の各チャンクは「完全に可視（直近）」か「要約トークンで代替（遠方）」のいずれかで、部分的に両方ということが起きない。KV コストは <code>O(N/k)</code>。RULER-128K でフル Attention を 5.81 ポイント上回り、128K で KV メモリ 2.5 倍削減を主張する。第 5.6 節の Gist tokens 系と第 5.2 節の疎化系の交点にある「第三の道」である。</li>
+
+<li><span class="paper">Hunyuan-TurboS</span>（Tencent, 2025.5, <span class="aid">arXiv:2505.15431</span>）は <strong>Mamba2 を主体に据えた</strong>数少ない大規模モデルである。128 層を AMF（Attention→Mamba2→FFN）と MF（Mamba2→FFN）ブロックで構成し、内訳は Mamba2 が 57 層、Attention が 7 層、FFN が 64 層。560B 総／56B アクティブ。<strong>純粋な SSM 路線が東西いずれでも少数派に留まっている</strong>という事実そのものが、第 6.4 節の二つの壁の傍証になっている。</li>
+</ul>
+
+<h3>7.9 何が読み取れるか</h3>
+
+<ol class="pts">
+<li><strong>これは収束であって分岐ではない。</strong> 東西を問わず、調査した全てのラボが同じ構造的な賭けに到達している——厳密 Attention を層の 8〜27% に残し、残りを安価な機構で埋める。<strong>フル Attention 0% の旗艦は存在せず、検証できた範囲で 1 層のみの旗艦も存在しない。</strong> 分かれているのは (a) 多数派スロットに何を置くか、(b) 少数派スロットに何を置くか、(c) 深さ方向の情報流をどう補償するか、の三点だけである。</li>
+
+<li><strong>「厳密側」は固定点ではなかった。</strong> フル MHA → GQA → MLA → 学習可能疎性（DSA / QSA / MSA）と、少数派スロットの部品自体が三度入れ替わった。ここが本章で最も見落とされやすい。比率だけを追うと、この入れ替わりが見えなくなる。</li>
+
+<li><strong>比率には下限があり、配置が効く。</strong> Nemotron-Flash の直接的なアブレーションは 1 層で NIAH が崩れることを示し、最低 2 層を推奨する。一方 NLL 誘導の層選択は、賢く選べば必要な割合が半減しうることを示した。<strong>「何層か」より「どの層か」が次の問いである。</strong></li>
+
+<li><strong>新機構が次世代を生き延びるとは限らない。</strong> StepFun は自社の MFA を、MiniMax は自社の Lightning ハイブリッドを、次世代で捨てた。この分野の規律は、機構の出自を問わない。</li>
+
+<li><strong>東西の差は構造ではなく<em class="term">賭け方</em>にある。</strong> 中国勢は<strong>ネイティブに事前学習された学習可能疎性</strong>を旗艦の第一級機構として押し出しているのに対し、西側の公開情報はスライディングウィンドウ等の構造的工夫と、サービング側の KV 最適化に寄っている。第 5 章で見た「事後に貼る疎性」の限界を、中国勢は事前学習側で解こうとしている。</li>
+</ol>
+
+<h2 class="sec" id="s8"><span class="n">08 / Crisis</span>評価の危機</h2>
+
+<p class="lede">2024 年以降、この分野で最も重要な進展は新しい手法ではない。既存の手法群の評価方法が、実際の劣化を系統的に見落としてきたという指摘である。</p>
+
+<p>問題の構造はこうである。KV 圧縮手法の大半は、perplexity と単一事実の needle-in-a-haystack（NIAH）検索、そして LongBench の数タスクで評価されてきた。これらは<strong>圧縮が壊すものを測る設計になっていない</strong>。</p>
+
+<h3>8.1 何が見落とされていたか</h3>
+
+<ol class="pts">
+<li><strong>NIAH は単一事実の検索しか測らない。</strong> <span class="paper">RULER</span> は意図的に難化されており、検索の変種（single-needle, multi-key, multi-query, multi-value）に加えて集約・多段追跡・QA を含む。NIAH だけで「無損失」に見える手法は、コミュニティ自身のより新しい基準に照らせば検証不足とみなされる。</li>
+
+<li><strong>論文間の比較が成立していなかった。</strong> <span class="paper">KV Cache Compression, But What Must We Give in Return?</span>（EMNLP 2024 Findings, <span class="aid">arXiv:2407.01527</span>）は 10 手法以上を単一環境で 7 種のタスクカテゴリにわたり初めて統一比較した。その最大の発見は経験的というより手続き的である——<strong>それ以前の論文の手法比較は、モデルもデータセットも予算もシステム構成も揃っておらず、論文をまたいだ「どれが最良か」という主張は検証不能だった</strong>。</li>
+
+<li><strong>単一リクエスト評価そのものが誤導的である。</strong> <span class="paper">SCBench</span>（Microsoft, ICLR 2025, <span class="aid">arXiv:2412.10319</span>）の指摘。実運用（vLLM, SGLang, および主要プロバイダ）では KV キャッシュが<strong>複数リクエスト間で再利用される</strong>。ゆえに KV キャッシュのライフサイクル全体——生成・圧縮・検索・ロード——を通じて評価しなければならない。単発評価で効率的に見える手法が、キャッシュ再利用の動態下ではまったく異なる挙動を示しうる。</li>
+
+<li><strong>劣化はタスク依存であり、崩れる能力は一様でない。</strong> <span class="paper">Semantic Integrity Matters</span>（HKUST, ICML 2026, <span class="aid">arXiv:2502.01941</span>）は <strong>KVFundaBench</strong> により、KV 圧縮下で能力ごとに劣化の仕方が違うことを示した。この報告で特徴的なのは、検索系タスクは比較的頑健である一方、<strong>高密度推論（Chain-of-Thought の連鎖）が著しく壊れる</strong>という所見である——圧縮が思考の連結そのものを断つためだと説明される。これは第 5.2 節で見た「恒久退避は検索を壊す」という所見と<strong>方向が食い違って見える</strong>。手法・予算・タスク設計が異なるため直接の矛盾とは言えないが、<em class="term">どの能力が先に壊れるかは設定に依存し、単一の順位付けは存在しない</em>と読むのが妥当である。同論文はあわせて、少数事例や意味単位を不可分ブロックとして扱う ShotKV を提案し、長文生成で 9–18% の精度改善を報告している。</li>
+<li><strong>複数指示下で、特定の指示だけが選択的に無視される。</strong> <span class="paper">The Pitfalls of KV Cache Compression</span>（UCLA, <span class="aid">arXiv:2510.00231</span>, ACL 2026）は最も鋭い批判である。StreamingLLM, SnapKV, TOVA, H2O, K-Norm を、単一タスクの QA や要約ではなく<strong>複数指示プロンプト</strong>（IFEval）で評価した。結果：スループット向上は本物である。しかし複数指示が同時に与えられると、<strong>ある指示だけが他より急速に劣化し、完全に無視される点まで到達する</strong>。標準的な単一指示の長文脈ベンチマークでは原理的に不可視な失敗モードである。さらにシステムプロンプト漏洩のケーススタディにおいて、圧縮が<strong>情報漏洩の挙動を測定可能なほど変える</strong>ことを示した。セキュリティに関わる副作用であり、この分野の評価プロトコルにこれまでほぼ存在しなかった観点である。</li>
+</ol>
+
+<div class="callout">
+<p class="ct">機構的な説明は既にあった</p>
+<p>第 5 章で触れた <span class="paper">Retrieval Head</span>（<span class="aid">arXiv:2404.15574</span>）は、これらの失敗の機構的な説明そのものである。長文脈の事実性を担うのは少数の特定ヘッドであり、それは本質的かつ安定している。H2O や StreamingLLM のような一様・無原則な退避は、<strong>検索ヘッドを特別扱いする機構を持たない</strong>。ゆえに壊れる。DuoAttention はこの知見を直接設計に翻訳することで問題を回避した。評価の危機と機構的解釈可能性が、同じ問題の二つの側面として接続している。</p>
+</div>
+
+<h3>8.2 実務への含意</h3>
+
+<p>文献全体から導かれる実務的な順序は、意外なほど明確である。</p>
+
+<ol class="pts">
+<li><strong>まずシステム系統を採る。</strong> PagedAttention、接頭辞キャッシュ、連続バッチング、必要に応じて分離アーキテクチャ。これらは無駄の除去であり、精度リスクをまったく負わない。多ターン／エージェント／RAG ワークロードでは、損失を伴うリクエスト毎の圧縮より実効スループットへの寄与が大きい可能性が高い。</li>
+<li><strong>次に量子化。</strong> K はチャネル方向（可能なら RoPE 適用前）、V はトークン方向に 2〜4 ビット。KIVI / KVQuant の知見に従えば精度上ほぼ無料である。</li>
+<li><strong>アーキテクチャは一度きりの決断。</strong> 新規学習なら最低 GQA、可能なら MLA（または GTA/GLA）。既存 GQA チェックポイントなら TransMLA / Palu による事後変換という経路がある。</li>
+<li><strong>退避・疎化は最後に、かつ検証付きで。</strong> perplexity や NIAH ではなく、RULER・SCBench 型の複数リクエスト評価・圧縮下の IFEval で検証すること。ここだけが情報を捨てる操作である。</li>
+</ol>
+
+<h2 class="sec" id="s9"><span class="n">09 / Open</span>未解決問題</h2>
+
+<ol class="pts">
+<li><strong>状態サイズと想起容量のトレードオフを回避する方法はあるか。</strong> Based が定式化したこの限界は情報理論的であり、アーキテクチャの工夫で消せるものではない。ハイブリッドは回避ではなく<strong>棲み分け</strong>である。定数状態のまま想起を保つ方法が原理的に存在するのか、それとも本質的に不可能なのかは、まだ決着していない。</li>
+
+<li><strong>ハイブリッド比率を原理的に決められるか。</strong> 8%（Nemotron-H）から 25%（Qwen3-Next）まで、実運用の比率は 3 倍以上ばらついている。どのタスク分布に対してどの比率が最適かを事前に予測する理論はない。現状は経験的な探索である。</li>
+
+<li><strong>線形 Attention の memory-bandwidth-bound 問題。</strong> MiniMax-M2 の報告が示すように、線形 Attention は学習時ですら帯域律速でありうる。極端な I/O 工学（Lightning Attention, FlashLinearAttention）なしには理論的節約が実現しない。これは第一波の「efficiency length」問題の再来であり、根本的な解決を見ていない。</li>
+
+<li><strong>FlashAttention 互換な重要度信号。</strong> 生の Attention 重みに依存する退避手法は、実体化しないカーネルの上で動かない。保存済み K/V のみから十分な代理信号を作れるのか、それとも重要度判断には本質的にスコア行列が要るのかは未解決である。</li>
+
+<li><strong>評価の再構築。</strong> 単一リクエスト・単一指示・単一事実検索という 3 つの単純化が、いずれも実運用と乖離していることが判明した。ではセキュリティ副作用（システムプロンプト漏洩）まで含めた、実運用を代表する標準評価はどう設計すべきか。SCBench と Pitfalls 論文は問題を提起したが、標準化された後継はまだない。</li>
+
+<li><strong>ハードウェアの非対称進化への追随。</strong> FlashAttention-4 が示したように、Tensor Core だけが速くなり共有メモリ帯域と特殊関数ユニットが追随しないとき、IO 最適性の定義そのものが書き換わる。アルゴリズムとハードウェアの共設計が、世代ごとにやり直しを要求する構造になっている。</li>
+
+<li><strong>ネイティブ疎性はどこまで登れるか。</strong> DSA の索引器が抱えていた <code>O(L²)</code> 採点コストは LSA が潰した。しかし学習可能な索引という機構そのものに、第 6.4 節の「壁 1」がどう効いてくるのかは未解明である。top-k の <code>k</code> を固定する限り、それは形を変えた定数状態ではないのか。第 5.7 節の <code>Θ(nd)</code> 下界は「無仮定なら劣線形は不可能」と述べるのみで、<strong>実データの分布がどれだけの圧縮余地を与えるのかは定量化されていない</strong>。この分野が経験的に押し広げてきた圧縮率が、理論的な余地のどのあたりに位置するのかは分かっていない。</li>
+<li><strong>どの能力が先に壊れるかの順序は決まるのか。</strong> 検索が先に壊れるという報告と、高密度推論が先に壊れるという報告が併存している（第 8.1 節）。手法・予算・タスクのどの軸がこの順序を決めるのかが分かれば、圧縮の設計指針になる。</li>
+<li><strong>比率 3:1 の理論的導出。</strong> 東西の独立したラボが経験的に同じ帯域へ収束していることは、説明されるべき現象であって、説明ではない。</li>
+<li><strong>KV キャッシュの「資産化」。</strong> Cartridges 系統が示唆するように、KV キャッシュを事前計算・配布可能な成果物として扱う方向は、圧縮とは異なる軸である。この方向がどこまで一般化できるかは、2026 年時点で形成途上である。</li>
+</ol>
+
+<h2 class="sec" id="s10"><span class="n">10 / Provenance</span>出典と検証状況</h2>
+
+<p>本レビューは、4 系統（第一波の近似 Attention／IO 認識型厳密 Attention／KV キャッシュ最適化／SSM・線形再帰・ハイブリッド）について並行して実施した文献調査を統合したものである。arXiv ID と会議名は、可能な限り arxiv.org の abstract ページまたは公式プロシーディングスに対して照合した。</p>
+
+<div class="callout">
+<p class="ct">検証されていない、または信頼度の低い記述</p>
+<p>誠実さのために明示する。以下は本調査で一次情報に到達できなかった項目であり、本文中でも <span class="flag">要確認</span> を付している。</p>
+</div>
+
+<ul class="pts">
+<li><strong>Jamba の正確な Attention 層比率</strong>。公開記述は「Transformer・Mamba・MoE 層の組み合わせ」に留まり、ブロック単位のパターンを一次情報で確認できなかった。</li>
+<li><strong>IBM Granite 4.0</strong>。査読前刷を含む arXiv 論文を特定できず、IBM 自身の発表と報道に依拠している。9:1 という比率もその範囲の情報である。</li>
+<li><strong>Llama 4 / iRoPE</strong>。形式的な arXiv 技術報告を確認できず、Meta のブログおよび第三者の技術解説に依拠している。</li>
+<li><strong>Mamba-3</strong>（<span class="aid">arXiv:2603.15569</span>）は 2026 年 3 月投稿の ICLR 2026 投稿論文であり、採択・カメラレディ状況は本稿執筆時点（2026-09-04）で独立に確認できていない。</li>
+<li><strong>Flash-Decoding</strong> は PyTorch ブログおよび Stanford CRFM ブログでの公開のみで、arXiv 論文を特定できなかった。SNS で流通した「FlashAttention v2 比 60 倍」という数値は公式の「最大 8 倍」と整合せず、採用していない。</li>
+<li><strong>Megatron-LM の Context Parallelism</strong> には単一の正典的論文が存在しない。最も近い検証可能な出典として Korthikanti ら（<span class="aid">arXiv:2205.05198</span>）および Llama 3 のスケーリング論文を挙げるに留める。</li>
+<li><strong>GPT-3 における Sparse Transformer 類似パターンの使用</strong>。広く引用される記述だが、本調査では原論文本文を再取得できなかった。信頼度は高いが未再検証である。</li>
+<li><strong>Titans, LLMLingua の正確な arXiv ID</strong>、<strong>InfiniGen・PyramidInfer の具体的スループット値</strong>、<strong>Character.AI 技術ブログの原公開日</strong>、<strong>Qwen3-Next の一次出典</strong>（論文かモデルカードか）についても、確定に至らなかった。</li>
+<li><strong>初版の誤りを訂正した箇所。</strong> 初版は「Qwen 3.8 という旗艦世代は存在しない」と記したが、<strong>Qwen3.8-Max は 2026 年 8 月に実在の旗艦として公開されている</strong>（第 7.4 節で訂正済み）。一方、その特徴を「フル Attention が 1 層のみ」とする理解も一次情報と一致しない——公開設定は <code>full_attention_interval: 4</code>、92 層中 23 層である。<strong>Qwen3.8-Max には専用の技術報告が存在せず</strong> <span class="flag">要確認</span>、アーキテクチャの根拠は公開された設定ファイルと GitHub の README に限られる。ホスト API 版とオープンウェイト版が Attention 構成まで同一かも未確認である。Qwen3.6 Plus / 3.7 Max の層構成、および二次情報のみで流通する「Qwen3.8-Max-0902」点更新の範囲も確定に至らなかった。</li>
+<li><strong>DeepSeek V4 の CSA / HCA</strong> は名称と定量値（1M 文脈で FLOPs 27%、KV 10%）は確認できたが、機構の定義は本調査では取得できていない。<strong>DeepSeek R2 は本稿執筆時点で未公開</strong>であり、流通する仕様は未確認のリークである。</li>
+<li><strong>MiniMax「M2.1」</strong> という独立したアーキテクチャの公開は確認できなかった。存在しないか、アーキテクチャ上の物語を持たない小改訂と見るのが妥当である。</li>
+<li><strong>Kimi K3</strong> の Attention Residuals の機構（深さ方向の softmax Attention とブロック化）は追調査で一次確認できた。層数内訳（69 KDA : 24+1 Gated-MLA）は二次情報を含む <span class="flag">要確認</span>。KDA の漸化式は Kimi Linear 論文で一次確認済みである。</li>
+<li><strong>情報空白</strong>：ByteDance Doubao / Seed 2.0（2026.2 出荷）のアーキテクチャを記した技術報告を特定できなかった。「革新がない」ことの確認ではなく、単に到達できなかったという意味である。Tencent Hunyuan についても 2025 年半ば以降のAttention 設計を伴う後継を確認できていない。ERNIE 5.0 の「FlashMask」が文献上の同名概念と同一かも未確認である。</li>
+<li>複数の定量値（スループット倍率、圧縮率）は論文アブストラクトの記述に基づいており、本文精読による確認は行っていない。方向性としては信頼できるが、正式な引用の前には一次情報の確認を推奨する。</li>
+<li>調査中に検索予算が枯渇した系統があり、2026 年の最新論文群（VecInfer, WindowKV, KeepKV 等）は網羅していない。この分野は依然として収束ではなく拡大の段階にある。</li>
+</ul>
+
+<h3>外部調査との突き合わせ</h3>
+<p>本改訂では、同一テーマについて別途行われた独立調査（51 件の一覧）と機械的に突き合わせた。arXiv ID を鍵に照合した結果、<strong>51 件中 43 件が既存と重複し、新規増分は 8 件</strong>だった。重複率の高さは、両調査が主要文献の骨格について独立に同じ結論へ達したことを意味する。</p>
+<p>追加した 8 件はいずれも arXiv の abstract ページに対して題名・著者・機構を再確認した。その過程で、外部一覧の短縮名 2 件が実際の題名と異なることが判明している——「Memory-Compressed Attention」は <em>Generating Wikipedia by Summarizing Long Sequences</em> の一機構であり、「Fundamental Abilities under KV Compression」の実際の題名は <em>Semantic Integrity Matters</em> である（導入するベンチマーク名が KVFundaBench）。本レビューは一次情報側の題名を採っている。</p>
+<p>なお <span class="aid">arXiv:2502.15955</span> は、arXiv のメタデータ上の題名（"Compression Barriers <em>for</em> Autoregressive Transformers"）と本文中の題名（"... <em>in</em> ..."）が食い違っている <span class="flag">要確認</span>。引用時は索引される前者を採るのが無難である。</p>
+<h3>読み方の指針</h3>
+
+<p>本レビューは改訂に際して、初版の誤り（Qwen 3.8 の実在、および第 8 章を「中国勢の分岐」として立てた構成）を削除せず訂正として明示する方針を採っている。<strong>収束を分岐と読み違えていた</strong>ことは、この分野の読み方そのものに関わる誤りだからである。</p>
+<p>第 7 章の後半（2025–2026 年に出荷された各社アーキテクチャ）は特に変動が速い領域である。複数のラボが 1 年内に 2〜4 回の版更新を行っており、版番号と帰属は本稿の調査日（2026-09-04）時点のものとして読まれたい。</p>
+<p>本レビューの主張のうち、<strong>構造的なもの</strong>——4 軸の区別、prefill と decode の非対称性、FlashAttention が FLOPs を下げていないこと、SSD 双対性、状態サイズと想起容量のトレードオフ、評価の危機——は、複数の独立した一次情報によって支持されている。一方、<strong>個別の数値と最新の帰属</strong>については上記の限界がある。両者を区別して読まれたい。</p>
+
+<div class="callout" id="maplink">
+<p class="ct">付録：インタラクティブ論文関係マップ</p>
+<p>本レビューで扱った <strong>195 件</strong>の論文の系譜・影響関係は、別途インタラクティブな関係マップとして可視化している。横軸に発表年、縦のレーンに研究系統を取り、色は研究の<em class="term">立場</em>（近似／定数状態／厳密／KV 圧縮／システム／実運用モデル／理論・評価）を符号化している。ノードを選ぶとその論文の祖先と子孫が辿れる。</p><p style="margin-bottom:0"><a href="https://claude.ai/code/artifact/4cc0aa5e-4b03-474f-ab38-9381c9f45267" style="font-family:var(--font-ui);font-weight:700;text-decoration:none;border-bottom:2px solid var(--acc)">Attention 系譜マップを開く →</a></p>
+</div>
+
+</article>
+</div>
+</div>
