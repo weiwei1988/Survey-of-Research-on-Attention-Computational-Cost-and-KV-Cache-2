@@ -6,15 +6,22 @@
 
 収録 **195 論文 / 214 系譜辺**、調査基準日 **2026-09-04**。
 
+公開サイト: <https://weiwei1988.github.io/Survey-of-Research-on-Attention-Computational-Cost-and-KV-Cache-2/>
+
 | | 内容 | 開く |
 |---|---|---|
-| 📄 **レビュー論文** | 全 10 章。何が起きたのかを筋道立てて読む | [`review.html`](review.html) ／ [公開版](https://claude.ai/code/artifact/9521444f-0400-4596-b94e-73fccbbdfb86) |
-| 🕸️ **関係マップ** | 195 論文の系譜を辿る。年代 × 研究系統で配置 | [`map.html`](map.html) ／ [公開版](https://claude.ai/code/artifact/4cc0aa5e-4b03-474f-ab38-9381c9f45267) |
+| 📄 **レビュー論文** | 全 10 章。何が起きたのかを筋道立てて読む | **[ブラウザで読む](https://weiwei1988.github.io/Survey-of-Research-on-Attention-Computational-Cost-and-KV-Cache-2/review.html)** ／ [ソース](review.html) |
+| 🕸️ **関係マップ** | 195 論文の系譜を辿る。年代 × 研究系統で配置 | **[ブラウザで開く](https://weiwei1988.github.io/Survey-of-Research-on-Attention-Computational-Cost-and-KV-Cache-2/map.html)** ／ [ソース](map.html) |
+
+> GitHub のファイル表示では HTML は描画されず、ソースが出る。
+> **「ブラウザで読む／開く」から開くこと。**
 
 どちらも依存パッケージのない単一 HTML ファイルで、ブラウザで直接開けば動く。
-サーバもビルドも要らない。
+サーバもビルドも要らない。手元に落として開いてもよい。
 
 ```bash
+git clone https://github.com/weiwei1988/Survey-of-Research-on-Attention-Computational-Cost-and-KV-Cache-2.git
+cd Survey-of-Research-on-Attention-Computational-Cost-and-KV-Cache-2
 open review.html
 open map.html
 ```
