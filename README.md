@@ -5,6 +5,12 @@
 
 調査基準日: **2026-09-04**
 
+リポジトリ: <https://github.com/weiwei1988/Survey-of-Research-on-Attention-Computational-Cost-and-KV-Cache-2>
+
+```bash
+git clone https://github.com/weiwei1988/Survey-of-Research-on-Attention-Computational-Cost-and-KV-Cache-2.git
+```
+
 ---
 
 ## 成果物
@@ -27,9 +33,10 @@ open map.html
 ## ファイル構成
 
 ```
-Attention_KVcash_SearchMap/
+.
 ├── README.md
 ├── AGENTS.md              引き継ぎ規約（データモデル・不変条件・守るべきこと）
+├── .gitignore
 ├── review.html            レビュー論文本体            ← 正本
 ├── map.html               関係マップ（論文データを内包） ← 正本
 ├── PAPERS.md              収録論文一覧（レーン別）      ← 生成物
@@ -45,8 +52,8 @@ Attention_KVcash_SearchMap/
 ```
 
 **`map.html` が論文データの唯一の情報源**で、`PAPERS.md` と `data/` はそこから生成する。
-`map.html` を編集したら再生成すること（整合性検査を兼ねており、id 重複・存在しない親 id・
-`META` の欠落があれば終了コード 1 で落ちる）。
+`map.html` を編集したら再生成すること。整合性検査を兼ねており、id 重複・存在しない親 id・
+`META` や `SUM` の欠落や余剰があれば**終了コード 1 で落ちる**ため、CI としてそのまま使える。
 
 ```bash
 python3 tools/export_papers.py
@@ -72,7 +79,7 @@ python3 tools/export_papers.py
 2. **問題の定式化** — prefill / decode の非対称性、KV サイズ式、デコードのローフライン
 3. **第一波：近似の時代**（2018–2022） — 疎化・線形・再帰の 5 系統と、全滅した 6 つの理由
 4. **転回：FlashAttention** — FLOPs を下げずに IO 下界を達成し、近似の前提を消した
-5. **戦場の移動：KV キャッシュ** — サイズ式の各項に対応する 6 系統
+5. **戦場の移動：KV キャッシュ** — サイズ式の各項に対応する 6 系統と、圧縮の理論的下界
 6. **第二波：定数状態への再挑戦** — SSM / 線形 RNN、SSD 双対性、二つの独立した壁
 7. **収束点：ハイブリッドという妥協**（2024–2026） — ハイブリッドを「二つのスロット」として解剖し、
    両スロットの部品の入れ替わり（SWA→Mamba→Gated DeltaNet→KDA / フル MHA→GQA→MLA→学習可能疎性）、
@@ -151,6 +158,30 @@ print('余分な META:', [k for k in mk if k not in ids])"
 
 ---
 
+## 開発の進め方
+
+`main` へ直接コミットせず、ブランチを切って PR 経由で入れる。
+
+```bash
+git switch -c docs/some-change
+# 編集
+python3 tools/export_papers.py     # map.html を触ったら必ず再生成（検証を兼ねる）
+git add -A && git commit
+git push -u origin docs/some-change
+gh pr create --base main
+```
+
+**OneDrive 配下で作業する場合の注意。** 同期がファイルのパーミッションを書き換えるため、
+内容が同じでも実行ビットの差分（`old mode 100644` / `new mode 100755`）が延々と出る。
+このリポジトリでは `core.fileMode false` を設定してこれを無視している。
+実行ビットを意図的に管理したくなった場合だけ、この設定を外すこと。
+
+```bash
+git config core.fileMode false
+```
+
+---
+
 ## 公開版を更新する場合の注意
 
 公開済みアーティファクトは**ファイルパスで同一性が判定される**。
@@ -194,5 +225,13 @@ SSD 双対性、状態サイズと想起容量のトレードオフ、評価の�
 4 系統を並行して文献調査し（第一波の近似 Attention / IO 認識型厳密 Attention /
 KV キャッシュ最適化 / SSM・線形再帰・ハイブリッド）、その後 2026 年の各社アーキテクチャについて
 追加調査を 2 本行って統合した。2 本目は Qwen3.8-Max と、フル Attention 層の下限に関する
-アブレーション研究を対象とし、初版の誤りの訂正に用いた。arXiv ID と会議名は可能な限り arxiv.org の
-abstract ページまたは公式プロシーディングスに対して照合している。
+アブレーション研究を対象とし、初版の誤りの訂正に用いた。
+
+さらに、同一テーマで別途行われた独立調査（51 件の一覧）と arXiv ID を鍵に機械的に突き合わせた。
+**51 件中 43 件が既存と重複し、新規増分は 8 件**だった。重複率の高さは、両調査が主要文献の骨格に
+ついて独立に同じ結論へ達したことを意味する。追加した 8 件はいずれも arXiv の abstract ページに
+対して題名・著者・機構を再確認しており、その過程で外部一覧の短縮名 2 件が実際の題名と異なることも
+判明している（詳細は第 10 章）。
+
+arXiv ID と会議名は可能な限り arxiv.org の abstract ページまたは公式プロシーディングスに対して
+照合している。
