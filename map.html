@@ -98,7 +98,15 @@ button.b[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);colo
 .ph{font-family:var(--font-mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 .8rem;padding-bottom:.5rem;border-bottom:1px solid var(--rule)}
 .empty{color:var(--muted);font-size:.85rem;line-height:1.7}
 .empty b{display:block;color:var(--ink-2);font-size:.9rem;margin-bottom:.5rem}
-.empty ul{margin:.7rem 0 0;padding-left:1.1rem;display:flex;flex-direction:column;gap:.35rem}
+.empty ul{margin:.7rem 0 0;padding-left:1.15rem;display:flex;flex-direction:column;gap:.35rem}
+/* 行頭記号をその立場の色にする。マップ上のノードの色と対応させるため */
+.empty li::marker{color:var(--c-approx);font-size:1.15em}
+.empty li.k-state::marker{color:var(--c-state)}
+.empty li.k-exact::marker{color:var(--c-exact)}
+.empty li.k-kv::marker{color:var(--c-kv)}
+.empty li.k-sys::marker{color:var(--c-sys)}
+.empty li.k-model::marker{color:var(--c-model)}
+.empty li.k-theory::marker{color:var(--c-theory)}
 
 #dt{display:none}
 #dt.on{display:block}
@@ -167,13 +175,13 @@ button.b[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);colo
       <b>ノードを選ぶと、その論文の位置づけと系譜が表示されます。</b>
       横軸は発表年、縦のレーンは研究系統。色は研究の<em>立場</em>を表します。
       <ul>
-        <li><b>近似</b> — FLOPs を減らすために厳密性を捨てる</li>
-        <li><b>定数状態</b> — 状態サイズを系列長から切り離す</li>
-        <li><b>厳密</b> — 出力を変えずに IO とメモリだけを削る</li>
-        <li><b>KV 圧縮</b> — キャッシュそのものを小さくする</li>
-        <li><b>システム</b> — 無駄の除去。精度リスクなし</li>
-        <li><b>実運用モデル</b> — 実際に出荷された構成</li>
-        <li><b>理論・評価</b> — 限界の証明と、批判</li>
+        <li class="k-approx"><b>近似</b> — FLOPs を減らすために厳密性を捨てる</li>
+        <li class="k-state"><b>定数状態</b> — 状態サイズを系列長から切り離す</li>
+        <li class="k-exact"><b>厳密</b> — 出力を変えずに IO とメモリだけを削る</li>
+        <li class="k-kv"><b>KV 圧縮</b> — キャッシュそのものを小さくする</li>
+        <li class="k-sys"><b>システム</b> — 無駄の除去。精度リスクなし</li>
+        <li class="k-model"><b>実運用モデル</b> — 実際に出荷された構成</li>
+        <li class="k-theory"><b>理論・評価</b> — 限界の証明と、批判</li>
       </ul>
     </div>
     <div id="dt"></div>
