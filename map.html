@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Attention 系譜マップ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +35,7 @@
   --c-kv:#AE90D6; --c-sys:#6FA3DA; --c-model:#8FBB5E; --c-theory:#98A3AC;
 }
 *{box-sizing:border-box}
-body{background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow:hidden;-webkit-text-size-adjust:100%}
 
 .app{display:grid;grid-template-rows:auto 1fr;height:100vh;height:100dvh}
 
@@ -73,8 +75,19 @@ button.b[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);colo
 
 /* ---- main ---- */
 .main{display:grid;grid-template-columns:minmax(0,1fr) 21rem;min-height:0}
-@media (max-width:900px){.main{grid-template-columns:minmax(0,1fr);grid-template-rows:1fr auto}}
-.canvas{position:relative;overflow:hidden;background:var(--paper);cursor:grab;min-height:0}
+@media (max-width:900px){
+  .main{grid-template-columns:minmax(0,1fr);grid-template-rows:1fr auto}
+  .canvas{min-height:48vh}
+  .bar{gap:.55rem;padding:.5rem .7rem}
+  .brand span{display:none}
+  .cats{gap:.25rem}
+  .cat{font-size:.7rem;padding:.18rem .38rem}
+  .ctl label{display:none}
+  input[type=search]{width:8.5rem}
+  .count{font-size:.6rem}
+}
+.canvas{position:relative;overflow:hidden;background:var(--paper);cursor:grab;min-height:0;
+  touch-action:none;-webkit-user-select:none;user-select:none}
 .canvas.drag{cursor:grabbing}
 .canvas svg{display:block;width:100%;height:100%;touch-action:none}
 .hint{
@@ -94,7 +107,7 @@ button.b[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);colo
   border-left:1px solid var(--rule);background:var(--sheet);overflow-y:auto;
   padding:1.1rem 1.2rem 2rem;min-height:0;
 }
-@media (max-width:900px){.panel{border-left:none;border-top:1px solid var(--rule);max-height:44vh}}
+@media (max-width:900px){.panel{border-left:none;border-top:1px solid var(--rule);max-height:40vh;padding:.9rem 1rem 1.4rem}}
 .ph{font-family:var(--font-mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 .8rem;padding-bottom:.5rem;border-bottom:1px solid var(--rule)}
 .empty{color:var(--muted);font-size:.85rem;line-height:1.7}
 .empty b{display:block;color:var(--ink-2);font-size:.9rem;margin-bottom:.5rem}
@@ -947,28 +960,38 @@ function updateChrome(){
   if(!CH)return;
   CH.topBand.setAttribute('width',VW); CH.leftBand.setAttribute('height',VH);
   CH.leftEdge.setAttribute('y2',VH);   CH.topEdge.setAttribute('x2',VW);
+  // 帯が薄いとレーン名どうしが重なって潰れる。色帯は残したまま、
+  // 直前のラベルと間隔が取れないものだけ落とす。
+  let lastLabY=-1e9;
   CH.lanes.forEach(o=>{
     const y0=ty+o.L.top*k, y1=ty+(o.L.top+o.L.h)*k;
     const vis=(y1>HEADER_PX+8 && y0<VH);
-    o.stripe.style.display=o.lab.style.display=vis?'':'none';
-    if(!vis){o.sub.style.display='none';return;}
+    o.stripe.style.display=vis?'':'none';
+    if(!vis){o.lab.style.display='none';o.sub.style.display='none';return;}
     const top=Math.max(y0,HEADER_PX), bot=Math.min(y1,VH);
     o.stripe.setAttribute('y',top); o.stripe.setAttribute('height',Math.max(0,bot-top));
     // 帯が上端をまたぐ間はラベルを見出しの直下に貼り付けておく
     const yy=Math.min(Math.max(top+14,HEADER_PX+14), Math.max(bot-4,HEADER_PX+14));
-    o.lab.setAttribute('y',yy);
-    const room=(bot-top)>=32 && GUT>=100;
+    const fits=(yy-lastLabY)>=13;
+    o.lab.style.display=fits?'':'none';
+    if(fits) o.lab.setAttribute('y',yy);
+    const room=fits && (bot-top)>=32 && GUT>=100;
     o.sub.style.display=room?'':'none';
     if(room) o.sub.setAttribute('y',yy+12);
+    if(fits) lastLabY = room ? yy+12 : yy;
   });
   // 拡大して年の目盛が左へ流れ切っても、現在地の年は左端に貼り付けて残す
   CH.years.forEach(o=>{ o.x=tx+(X0+(o.y-Y0)*XS)*k; });
+  // 狭い画面では年が詰まって重なるので、間隔が取れないものは間引く
+  const MINGAP=36; let lastX=-1e9;
   CH.years.forEach((o,i)=>{
     const nx=CH.years[i+1]?CH.years[i+1].x:Infinity;
-    if(o.x>GUT+12 && o.x<VW-8){
+    if(o.x>GUT+12 && o.x<VW-8 && o.x-lastX>=MINGAP){
       o.t.style.display=''; o.t.setAttribute('x',o.x); o.t.setAttribute('text-anchor','middle'); o.t.style.opacity='';
+      lastX=o.x;
     } else if(o.x<=GUT+12 && nx>GUT+60){
       o.t.style.display=''; o.t.setAttribute('x',GUT+10); o.t.setAttribute('text-anchor','start'); o.t.style.opacity='.6';
+      lastX=GUT+10;
     } else {
       o.t.style.display='none';
     }
@@ -1103,17 +1126,49 @@ cv.addEventListener('wheel',e=>{
 // retargets the following pointerup (and therefore the click) to the canvas,
 // which is what stopped nodes and buttons from being clickable. So we arm on
 // pointerdown but only capture once the pointer has actually travelled.
+// touch-action:none でブラウザ既定のピンチを止めている以上、2 本指の拡大縮小は
+// 自前で実装しないと触覚デバイスで一切ズームできない（iOS で実際に効かなかった）。
 const DRAG_SLOP=5;
+const pts=new Map();
 let dg=false,armed=false,swallow=false,pid=null,px=0,py=0,sx=0,sy=0;
+let pinch=null,pinchRect=null;
 const hintEl=cv.querySelector('.hint');
 function dropHint(){ if(hintEl){hintEl.style.transition='opacity .4s';hintEl.style.opacity='0';setTimeout(()=>{hintEl.hidden=true;},420);} }
+function twoFinger(){
+  const a=[...pts.values()];
+  return {d:Math.hypot(a[1].x-a[0].x,a[1].y-a[0].y),mx:(a[0].x+a[1].x)/2,my:(a[0].y+a[1].y)/2};
+}
+function stopDrag(){
+  if(dg){ try{cv.releasePointerCapture(pid);}catch(_){} }
+  dg=false;armed=false;pid=null;cv.classList.remove('drag');
+}
 cv.addEventListener('pointerdown',e=>{
   if(e.target&&e.target.closest&&e.target.closest('.zoom')) return; // buttons keep their own click
-  if(e.button!==undefined&&e.button!==0) return;                    // left button / touch only
+  if(e.pointerType==='mouse'&&e.button!==0) return;                 // マウスは左ボタンのみ
   dropHint();
+  pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size>=2){                                                  // 2 本目 — ピンチへ切り替える
+    stopDrag(); swallow=true;
+    pinchRect=cv.getBoundingClientRect(); pinch=twoFinger();
+    return;
+  }
   armed=true;dg=false;swallow=false;pid=e.pointerId;
   px=sx=e.clientX;py=sy=e.clientY;});
 cv.addEventListener('pointermove',e=>{
+  if(!pts.has(e.pointerId))return;
+  pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size>=2){
+    if(!pinch){pinchRect=cv.getBoundingClientRect();pinch=twoFinger();return;}
+    const s2=twoFinger();
+    tx+=s2.mx-pinch.mx; ty+=s2.my-pinch.my;          // 2 指の中点の移動でパン
+    if(pinch.d>0&&s2.d>0){                           // 中点を固定したまま拡大縮小
+      const nk=clampK(k*(s2.d/pinch.d));
+      const mx=s2.mx-pinchRect.left, my=s2.my-pinchRect.top;
+      tx=mx-(mx-tx)*(nk/k); ty=my-(my-ty)*(nk/k); k=nk;
+    }
+    pinch=s2; atFit=false; xf();
+    return;
+  }
   if(!armed)return;
   if(!dg){
     if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)<DRAG_SLOP)return; // still a click, not a drag
@@ -1121,12 +1176,24 @@ cv.addEventListener('pointermove',e=>{
     try{cv.setPointerCapture(pid);}catch(_){}
   }
   tx+=e.clientX-px;ty+=e.clientY-py;px=e.clientX;py=e.clientY;atFit=false;xf();});
-function endDrag(){
-  if(dg){ try{cv.releasePointerCapture(pid);}catch(_){} swallow=true; } // a pan must not also select
-  armed=false;dg=false;pid=null;cv.classList.remove('drag');}
-cv.addEventListener('pointerup',endDrag);
-cv.addEventListener('pointercancel',endDrag);
+function endPointer(e){
+  pts.delete(e.pointerId);
+  if(pts.size<2) pinch=null;
+  if(pts.size===1&&!dg){                             // 片方だけ離した — 残る指でパンを継ぐ
+    const [id,q]=[...pts.entries()][0];
+    armed=true;pid=id;px=sx=q.x;py=sy=q.y;
+  }
+  if(pts.size===0){
+    if(dg) swallow=true;                             // a pan must not also select
+    stopDrag();
+  }
+}
+cv.addEventListener('pointerup',endPointer);
+cv.addEventListener('pointercancel',endPointer);
 cv.addEventListener('click',e=>{
+  // ズームボタンは常に通す。捕捉フェーズなので、ここで握り潰すと
+  // パンやピンチの直後の 1 回だけボタンが効かなくなる。
+  if(e.target&&e.target.closest&&e.target.closest('.zoom'))return;
   if(swallow){swallow=false;e.stopPropagation();e.preventDefault();}},true);
 sv.addEventListener('click',()=>{if(sel){sel=null;dt.classList.remove('on');ep.style.display='';apply();}});
 function zoomBy(f){const r=cv.getBoundingClientRect();zoomAt(f,r.width/2,r.height/2);}
