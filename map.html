@@ -1018,7 +1018,10 @@ function apply(){
     shown++;
     const qMiss=ql&&!(n.name.toLowerCase().includes(ql)||n.id.includes(ql));
     const sMiss=set&&!set.has(n.id);
-    const dim=qMiss||sMiss;
+    // 選択があるときは系譜の表示を優先する。検索はノードを見つけるための道具で、
+    // 見つけた後も絞り込みを効かせ続けると、系譜の前後が暗いまま残ってしまう
+    // （辺は set だけで判定しているので、辺だけ光ってノードが暗い状態になる）。
+    const dim=sMiss||(qMiss&&!set);
     n.g.classList.toggle('dim',!!dim);
     n.vis=true; n.lit=!dim;
     n.r.setAttribute('style', (sel===n.id)
