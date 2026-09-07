@@ -269,7 +269,7 @@ def write_markdown(rows: list[dict], path: pathlib.Path) -> None:
         "---",
         "",
         "⚠ は一次情報に到達できず、二次情報または組織発表に依拠している項目。",
-        "レビュー論文の第 10 章「出典と検証状況」に理由を列挙している。",
+        "文献レビューの第 10 章「出典と検証状況」に理由を列挙している。",
         "",
     ]
     path.write_text("\n".join(out), encoding="utf-8")
